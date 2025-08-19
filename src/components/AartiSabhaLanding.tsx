@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import BreakpointIndicator from './BreakpointIndicator';
 
 const AartiSabhaLanding = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -70,6 +71,9 @@ const AartiSabhaLanding = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
+      {/* Breakpoint Indicator */}
+      <BreakpointIndicator />
+      
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-amber-200 bg-white/80 backdrop-blur-lg">
         <div className="container mx-auto px-4">

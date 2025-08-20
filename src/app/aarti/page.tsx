@@ -13,7 +13,10 @@ import {
   ArrowUp,
   Copy,
   MessageCircle,
-  Star
+  Star,
+  Play,
+  Pause,
+  RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,12 +41,17 @@ const AartiReaderPage = () => {
   const [error, setError] = useState<string | null>(null);
   
   // Reader settings
-  const [fontSize, setFontSize] = useState(18);
+  const [fontSize, setFontSize] = useState(16);
   const [nightMode, setNightMode] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [contentLanguage, setContentLanguage] = useState<'hinglish' | 'marathi'>('hinglish');
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  
+  // Auto-scroll settings
+  const [autoScroll, setAutoScroll] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState(1);
+  const [currentStanza, setCurrentStanza] = useState(0);
 
   // Get aarti ID/slug from URL params
   const aartiId = searchParams.get('id');
@@ -103,6 +111,51 @@ const AartiReaderPage = () => {
     if (savedNightMode) setNightMode(JSON.parse(savedNightMode));
     if (savedContentLang) setContentLanguage(savedContentLang as 'hinglish' | 'marathi');
   }, []);
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (!autoScroll || !aarti) return;
+
+    const stanzas = aarti.lyrics[contentLanguage].split('\\n\\n').filter(s => s.trim() !== '');
+    if (currentStanza >= stanzas.length) {
+      setAutoScroll(false);
+      setCurrentStanza(0);
+      return;
+    }
+
+    const scrollToStanza = () => {
+      const stanzaElement = document.getElementById(`stanza-${currentStanza}`);
+      if (stanzaElement) {
+        stanzaElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    };
+
+    const timer = setTimeout(() => {
+      scrollToStanza();
+      setCurrentStanza(prev => prev + 1);
+    }, 8000 / scrollSpeed); // Base 8 seconds per stanza
+
+    return () => clearTimeout(timer);
+  }, [autoScroll, currentStanza, scrollSpeed, aarti, contentLanguage]);
+
+  const toggleAutoScroll = () => {
+    if (autoScroll) {
+      setAutoScroll(false);
+      setCurrentStanza(0);
+    } else {
+      setAutoScroll(true);
+      setCurrentStanza(0);
+    }
+  };
+
+  const resetAutoScroll = () => {
+    setAutoScroll(false);
+    setCurrentStanza(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleFontSizeChange = (size: number[]) => {
     const newSize = size[0];
@@ -167,120 +220,88 @@ const AartiReaderPage = () => {
   };
 
   const formatLyrics = (lyrics: string) => {
-    // Split by double line breaks for stanzas, then by single line breaks for lines
+    // Split by double line breaks for stanzas
     const stanzas = lyrics.split('\\n\\n').filter(stanza => stanza.trim() !== '');
     
-    return stanzas.map((stanza, stanzaIndex) => {
-      const lines = stanza.split('\\n').filter(line => line.trim() !== '');
-      
-      // Detect if this stanza contains a refrain (chorus)
-      const hasRefrain = lines.some(line => 
-        line.includes('जय देव') || 
-        line.includes('Jay Dev') || 
-        line.includes('दर्शन') || 
-        line.includes('Darshan')
-      );
-      
-      // Split main stanza from refrain if both exist
-      let mainLines: string[] = [];
-      let refrainLines: string[] = [];
-      
-      if (hasRefrain && lines.length > 4) {
-        // Typically first 4 lines are main stanza, rest is refrain
-        mainLines = lines.slice(0, 4);
-        refrainLines = lines.slice(4);
-      } else {
-        mainLines = lines;
-      }
-      
-      return (
-        <Card 
-          key={stanzaIndex} 
-          className={`transition-all duration-300 hover:shadow-lg ${
-            nightMode 
-              ? 'bg-gray-800 border-gray-600 hover:bg-gray-750' 
-              : 'bg-gradient-to-br from-orange-50 via-white to-yellow-50 border-orange-200 hover:border-orange-300'
-          }`}
-        >
-          <CardContent className="p-8">
-            {/* Stanza Number */}
-            <div className="flex items-center mb-6">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-md ${
-                nightMode 
-                  ? 'bg-orange-600 text-white' 
-                  : 'bg-gradient-to-br from-orange-500 to-amber-600 text-white'
-              }`}>
-                {stanzaIndex + 1}
+    return (
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4">
+        {stanzas.map((stanza, stanzaIndex) => {
+          const lines = stanza.split('\\n').filter(line => line.trim() !== '');
+          
+          return (
+            <div 
+              id={`stanza-${stanzaIndex}`}
+              key={stanzaIndex} 
+              className={`mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg transition-all duration-500 ${
+                currentStanza === stanzaIndex && autoScroll
+                  ? nightMode 
+                    ? 'bg-orange-900/20 ring-2 ring-orange-400/30' 
+                    : 'bg-orange-50 ring-2 ring-orange-300/50'
+                  : nightMode 
+                    ? 'hover:bg-gray-800/10' 
+                    : 'hover:bg-orange-25'
+              }`}
+            >
+              {/* Traditional Stanza Header with Indian Design */}
+              <div className="flex items-center justify-center mb-4">
+                <div className={`flex items-center space-x-3 ${
+                  nightMode ? 'text-orange-300' : 'text-orange-600'
+                }`}>
+                  {/* Left Om Symbol */}
+                  <span className="text-lg sm:text-xl">॥</span>
+                  
+                  {/* Stanza Number */}
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    nightMode 
+                      ? 'bg-orange-900/30 text-orange-200' 
+                      : 'bg-orange-100 text-orange-700'
+                  }`}>
+                    {stanzaIndex + 1}
+                  </span>
+                  
+                  {/* Right Om Symbol */}
+                  <span className="text-lg sm:text-xl">॥</span>
+                </div>
               </div>
-              <div className={`ml-4 h-px flex-1 ${
-                nightMode ? 'bg-gradient-to-r from-gray-600 to-transparent' : 'bg-gradient-to-r from-orange-300 to-transparent'
-              }`} />
-            </div>
-            
-            {/* Main Stanza Lines */}
-            <div className={`space-y-3 ${
-              nightMode ? 'bg-gray-750 border-gray-600' : 'bg-white/60 border-orange-100'
-            } rounded-lg p-6 border-l-4 ${
-              nightMode ? 'border-l-orange-500' : 'border-l-orange-400'
-            }`}>
-              {mainLines.map((line, lineIndex) => (
-                <div 
-                  key={lineIndex} 
-                  className={`transition-all duration-300 ${
-                    contentLanguage === 'marathi' 
-                      ? 'text-xl leading-relaxed font-serif' 
-                      : 'text-lg leading-relaxed'
-                  } ${
-                    nightMode ? 'text-gray-100' : 'text-gray-800'
-                  }`}
-                  style={{ 
-                    fontSize: `${fontSize + (contentLanguage === 'marathi' ? 6 : 4)}px`,
-                    lineHeight: 1.8
-                  }}
-                >
-                  {line.trim()}
-                </div>
-              ))}
-            </div>
-
-            {/* Refrain/Chorus Section */}
-            {refrainLines.length > 0 && (
-              <div className={`mt-6 space-y-3 ${
-                nightMode ? 'bg-amber-900/20 border-amber-600/30' : 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200'
-              } rounded-lg p-6 border-2 border-dashed relative`}>
-                {/* Refrain Label */}
-                <div className={`absolute -top-3 left-4 px-3 py-1 text-xs font-bold rounded-full ${
-                  nightMode 
-                    ? 'bg-amber-700 text-amber-100' 
-                    : 'bg-gradient-to-r from-amber-400 to-yellow-500 text-white'
-                } shadow-md`}>
-                  {contentLanguage === 'marathi' ? 'टेक' : 'Refrain'}
-                </div>
-                
-                {refrainLines.map((line, lineIndex) => (
+              
+              {/* Traditional Stanza Layout - Compact and Clean */}
+              <div className="space-y-2 sm:space-y-3">
+                {lines.map((line, lineIndex) => (
                   <div 
                     key={lineIndex} 
-                    className={`transition-all duration-300 text-center ${
+                    className={`text-center transition-colors duration-300 ${
                       contentLanguage === 'marathi' 
-                        ? 'text-xl leading-relaxed font-serif font-semibold' 
-                        : 'text-lg leading-relaxed font-semibold'
+                        ? 'font-serif tracking-wide' 
+                        : 'font-barlow font-medium tracking-wide'
                     } ${
-                      nightMode ? 'text-amber-200' : 'text-amber-800'
+                      nightMode 
+                        ? 'text-gray-100' 
+                        : 'text-gray-800'
                     }`}
                     style={{ 
-                      fontSize: `${fontSize + (contentLanguage === 'marathi' ? 6 : 4)}px`,
-                      lineHeight: 1.8
+                      fontSize: `${fontSize}px`,
+                      lineHeight: 1.6,
+                      letterSpacing: '0.02em'
                     }}
                   >
                     {line.trim()}
                   </div>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
-      );
-    });
+            </div>
+          );
+        })}
+        
+        {/* Traditional Closing */}
+        <div className="text-center mt-8 mb-4">
+          <div className={`text-2xl sm:text-3xl ${
+            nightMode ? 'text-orange-300' : 'text-orange-600'
+          }`}>
+            ॥ श्री हरि ॥
+          </div>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -449,14 +470,14 @@ const AartiReaderPage = () => {
                         <Slider
                           value={[fontSize]}
                           onValueChange={handleFontSizeChange}
-                          max={28}
-                          min={14}
-                          step={2}
+                          max={24}
+                          min={12}
+                          step={1}
                           className="mt-2"
                         />
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>14px</span>
-                          <span>28px</span>
+                          <span>12px</span>
+                          <span>24px</span>
                         </div>
                       </div>
 
@@ -503,6 +524,53 @@ const AartiReaderPage = () => {
                           </Button>
                         </div>
                       </div>
+
+                      {/* Auto-scroll Controls */}
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <label className={`text-sm font-medium ${nightMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                            Auto-scroll Reading
+                          </label>
+                          <Switch
+                            checked={autoScroll}
+                            onCheckedChange={toggleAutoScroll}
+                          />
+                        </div>
+
+                        {autoScroll && (
+                          <div className="space-y-4">
+                            <div>
+                              <label className={`text-sm font-medium ${nightMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                Scroll Speed: {scrollSpeed}x
+                              </label>
+                              <Slider
+                                value={[scrollSpeed]}
+                                onValueChange={(value) => setScrollSpeed(value[0])}
+                                max={3}
+                                min={0.5}
+                                step={0.5}
+                                className="mt-2"
+                              />
+                              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0.5x (Slow)</span>
+                                <span>3x (Fast)</span>
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={resetAutoScroll}
+                                className="flex-1"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                Reset
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -546,59 +614,139 @@ const AartiReaderPage = () => {
         </header>
       )}
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6 max-w-5xl">
-        {/* Aarti Header */}
-        <div className="text-center mb-12">
-          <h1 className={`text-4xl md:text-5xl font-bold mb-6 transition-all duration-300 ${
-            nightMode ? 'text-gray-100' : 'text-gray-900'
-          } ${contentLanguage === 'marathi' ? 'font-serif' : ''}`}
-          style={{ fontSize: `${fontSize + 12}px` }}>
-            {aarti.title[contentLanguage]}
-          </h1>
+      {/* Main Content - Book-like Layout */}
+      <main className={`min-h-screen transition-all duration-500 ${
+        nightMode 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+          : 'bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100'
+      }`}>
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-6xl">
           
-          <div className="flex flex-wrap justify-center gap-3 mb-6">
-            <Badge variant="secondary" className="bg-orange-100 text-orange-800 px-4 py-2 text-sm">
-              {getDeityName(aarti.deity)}
-            </Badge>
-            <Badge variant="outline" className="capitalize px-4 py-2 text-sm">
-              {aarti.difficulty}
-            </Badge>
-            {aarti.isPopular && (
-              <Badge className="bg-yellow-100 text-yellow-800 px-4 py-2 text-sm">
-                <Star className="h-4 w-4 mr-2" />
-                Popular
-              </Badge>
+          {/* Book-Style Header */}
+          <div className={`text-center mb-12 sm:mb-20 relative ${
+            nightMode ? 'text-gray-100' : 'text-gray-900'
+          }`}>
+            {/* Decorative top border - responsive */}
+            <div className={`flex justify-center mb-8 sm:mb-12 ${
+              nightMode ? 'text-orange-300/50' : 'text-orange-500/50'
+            }`}>
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-12 sm:w-20 h-0.5 bg-current rounded-full" />
+                <div className="w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-current" />
+                <div className="w-8 sm:w-12 h-0.5 bg-current rounded-full" />
+                <div className="text-2xl sm:text-3xl">॥</div>
+                <div className="w-8 sm:w-12 h-0.5 bg-current rounded-full" />
+                <div className="w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-current" />
+                <div className="w-12 sm:w-20 h-0.5 bg-current rounded-full" />
+              </div>
+            </div>
+            
+            {/* Main Title - Mobile Responsive */}
+            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 sm:mb-8 transition-all duration-300 px-2 ${
+              contentLanguage === 'marathi' ? 'font-serif tracking-wider' : 'tracking-wide'
+            }`}
+            style={{ 
+              fontSize: `clamp(${fontSize + 8}px, ${fontSize + 12}px + 2vw, ${fontSize + 20}px)`, 
+              lineHeight: 1.1,
+              textShadow: nightMode 
+                ? '0 4px 8px rgba(0,0,0,0.8)' 
+                : '0 4px 12px rgba(0,0,0,0.15)',
+              letterSpacing: contentLanguage === 'marathi' ? '0.1em' : '0.05em'
+            }}>
+              {aarti.title[contentLanguage]}
+            </h1>
+            
+            {/* Subtitle/Deity Information - Responsive */}
+            <div className={`text-lg sm:text-xl md:text-2xl font-medium mb-6 sm:mb-8 px-2 ${
+              nightMode ? 'text-orange-300' : 'text-orange-700'
+            }`}>
+              {contentLanguage === 'marathi' ? 'श्री' : 'Shri'} {getDeityName(aarti.deity)} {contentLanguage === 'marathi' ? 'आरती' : 'Aarti'}
+            </div>
+
+            {/* Decorative bottom border - responsive */}
+            <div className={`flex justify-center ${
+              nightMode ? 'text-orange-300/50' : 'text-orange-500/50'
+            }`}>
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-12 sm:w-20 h-0.5 bg-current rounded-full" />
+                <div className="w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-current" />
+                <div className="w-8 sm:w-12 h-0.5 bg-current rounded-full" />
+                <div className="text-2xl sm:text-3xl">॥</div>
+                <div className="w-8 sm:w-12 h-0.5 bg-current rounded-full" />
+                <div className="w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-current" />
+                <div className="w-12 sm:w-20 h-0.5 bg-current rounded-full" />
+              </div>
+            </div>
+          </div>
+
+          {/* Aarti Content */}
+          <div className="mb-12 sm:mb-16">
+            {formatLyrics(aarti.lyrics[contentLanguage])}
+          </div>
+
+          {/* Metadata moved to footer - Clean display */}
+          <div className={`text-center pt-8 sm:pt-12 border-t ${
+            nightMode ? 'border-gray-700' : 'border-orange-200'
+          }`}>
+            <div className={`inline-block px-6 sm:px-8 py-3 sm:py-4 rounded-2xl backdrop-blur-sm border mb-6 ${
+              nightMode 
+                ? 'bg-gray-800/50 border-gray-600/40' 
+                : 'bg-white/60 border-orange-200/60'
+            }`}>
+              <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+                <div className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium backdrop-blur-sm border ${
+                  nightMode 
+                    ? 'bg-orange-900/30 border-orange-600/40 text-orange-300' 
+                    : 'bg-orange-100/80 border-orange-300/60 text-orange-800'
+                }`}>
+                  📿 {getDeityName(aarti.deity)}
+                </div>
+                <div className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium capitalize backdrop-blur-sm border ${
+                  nightMode 
+                    ? 'bg-gray-800/50 border-gray-600/40 text-gray-300' 
+                    : 'bg-white/80 border-gray-300/60 text-gray-700'
+                }`}>
+                  📊 {aarti.difficulty} level
+                </div>
+                {aarti.isPopular && (
+                  <div className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-medium backdrop-blur-sm border ${
+                    nightMode 
+                      ? 'bg-yellow-900/30 border-yellow-600/40 text-yellow-300' 
+                      : 'bg-yellow-100/80 border-yellow-300/60 text-yellow-800'
+                  }`}>
+                    ⭐ Popular
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Tags Section */}
+            {aarti.tags.length > 0 && (
+              <div className={`inline-block px-6 sm:px-8 py-3 sm:py-4 rounded-2xl backdrop-blur-sm border ${
+                nightMode 
+                  ? 'bg-gray-800/50 border-gray-600/40' 
+                  : 'bg-white/60 border-orange-200/60'
+              }`}>
+                <h3 className={`text-sm sm:text-lg font-semibold mb-3 sm:mb-4 ${
+                  nightMode ? 'text-gray-200' : 'text-gray-700'
+                }`}>
+                  {contentLanguage === 'marathi' ? 'संबंधित शब्द' : 'Related Terms'}
+                </h3>
+                <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+                  {aarti.tags.map((tag, index) => (
+                    <span key={index} className={`px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm rounded-full ${
+                      nightMode 
+                        ? 'bg-gray-700/50 text-gray-300 border border-gray-600/30' 
+                        : 'bg-orange-100/60 text-orange-700 border border-orange-200/60'
+                    }`}>
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
-
-        {/* Aarti Stanzas */}
-        <div className="space-y-8 mb-12">
-          {formatLyrics(aarti.lyrics[contentLanguage])}
-        </div>
-
-        {/* Tags */}
-        {aarti.tags.length > 0 && (
-          <Card className={`transition-colors duration-300 ${
-            nightMode 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white/60 backdrop-blur-sm border-orange-200'
-          }`}>
-            <CardContent className="p-6">
-              <h3 className={`text-lg font-semibold mb-4 ${nightMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                Tags
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {aarti.tags.map((tag, index) => (
-                  <Badge key={index} variant="outline" className="text-sm px-3 py-1">
-                    #{tag}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </main>
 
       {/* Bottom Actions */}
@@ -651,6 +799,25 @@ const AartiReaderPage = () => {
         >
           <ArrowUp className="h-5 w-5" />
         </Button>
+      )}
+
+      {/* Auto-scroll Control Button */}
+      {!fullscreen && (
+        <div className="fixed bottom-20 left-6 z-50">
+          <Button
+            className={`rounded-full h-12 w-12 shadow-lg transition-all duration-300 ${
+              autoScroll
+                ? 'bg-green-600 hover:bg-green-700 text-white animate-pulse'
+                : nightMode
+                  ? 'bg-gray-700 hover:bg-gray-600 text-orange-300 border-orange-400/30'
+                  : 'bg-white hover:bg-orange-50 text-orange-600 border-orange-300 shadow-orange-200/50'
+            }`}
+            onClick={toggleAutoScroll}
+            variant={autoScroll ? "default" : "outline"}
+          >
+            {autoScroll ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </Button>
+        </div>
       )}
 
       {/* Fullscreen Mode Overlay */}

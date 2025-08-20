@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import PWAInstaller from "@/components/PWAInstaller";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -8,6 +8,13 @@ import { Toaster } from "@/components/ui/sonner";
 
 // Initialize environment logging silently (this will execute and log to console)
 import '@/config/env';
+
+const barlow = Barlow({
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-barlow',
+  display: 'swap',
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,7 +59,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Aarti App" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${barlow.variable} font-barlow antialiased`}
       >
         <LanguageProvider>
           <AuthProvider>

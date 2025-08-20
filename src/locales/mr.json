@@ -1,0 +1,117 @@
+{
+  "header": {
+    "title": "Aarti Sabha",
+    "tagline": "Digital Aarti Book & Sabha Companion",
+    "language": "Marathi",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "navigation": {
+    "browse": "Browse",
+    "favorites": "Favorites",
+    "sabha": "Sabha",
+    "profile": "Profile"
+  },
+  "hero": {
+    "title": "Divine Experience",
+    "titleHighlight": "In Harmony",
+    "subtitle": "Stay connected with family across distances through synchronized aarti singing with SwarSetu technology",
+    "hostSabha": "Host Sabha",
+    "joinSabha": "Join Sabha",
+    "browseAartis": "Browse Aartis"
+  },
+  "filters": {
+    "popular": "Popular",
+    "recent": "Recent",
+    "favorites": "Favorites",
+    "festivalSpecial": "Festival Special"
+  },
+  "sections": {
+    "browseByDeity": "Browse by Deity",
+    "popularAartis": "Popular Aartis",
+    "swarSetuFeatures": "SwarSetu Sync Technology",
+    "testimonials": "What Our Community Says",
+    "trending": "Trending",
+    "festivals": "Festivals",
+    "regional": "Regional"
+  },
+  "deities": {
+    "ganesha": "Ganesha",
+    "krishna": "Krishna",
+    "shiva": "Shiva",
+    "durga": "Durga",
+    "rama": "Rama",
+    "hanuman": "Hanuman",
+    "lakshmi": "Lakshmi",
+    "saraswati": "Saraswati",
+    "aartis": "Aartis"
+  },
+  "aarti": {
+    "duration": "Duration",
+    "singers": "Singers",
+    "start": "Start",
+    "traditional": "Traditional Aarti",
+    "sacred": "Sacred Aarti",
+    "devotional": "Devotional Aarti"
+  },
+  "features": {
+    "familyConnect": {
+      "title": "Family Connect",
+      "description": "Sync with family members across different locations in real-time"
+    },
+    "perfectTiming": {
+      "title": "Perfect Timing",
+      "description": "Advanced sync ensures everyone starts and follows together"
+    },
+    "globalSabha": {
+      "title": "Global Sabha",
+      "description": "Join public sabhas during festivals with devotees worldwide"
+    }
+  },
+  "actions": {
+    "viewAll": "View All",
+    "filter": "Filter",
+    "hostNewSabha": "Host New Sabha",
+    "findSabha": "Find Sabha",
+    "joinWithCode": "Join with Code"
+  },
+  "status": {
+    "live": "Live",
+    "active": "Active",
+    "members": "Members"
+  },
+  "search": {
+    "placeholder": "Search aartis, deities, or festivals...",
+    "mobilePlaceholder": "Search aartis..."
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display Name",
+    "confirmPassword": "Confirm Password",
+    "signInWithGoogle": "Sign in with Google",
+    "createAccount": "Create Account",
+    "forgotPassword": "Forgot Password?",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "signingIn": "Signing in...",
+    "creatingAccount": "Creating account...",
+    "welcome": "Welcome",
+    "signInError": "Sign in failed. Please try again.",
+    "signUpError": "Sign up failed. Please try again.",
+    "loginWith": "Or login with",
+    "signupWith": "Or sign up with",
+    "google": "Google",
+    "facebook": "Facebook",
+    "welcomeBack": "Welcome Back",
+    "joinCommunity": "Join the Community",
+    "loginSubtitle": "Continue your spiritual journey",
+    "signupSubtitle": "Start your devotional experience"
+  },
+  "dialog": {
+    "startJoinSabha": "Start or Join Sabha"
+  }
+}

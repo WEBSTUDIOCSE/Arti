@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Menu, X, Play, Users, Star, Heart, Filter, ChevronRight, Globe, Settings, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Menu, X, Play, Users, Star, Heart, Filter, ChevronRight, Globe, Settings, User, LogOut, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,63 +12,142 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import BreakpointIndicator from './BreakpointIndicator';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AartiSabhaLanding = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+  const { t, language, setLanguage, isMarathi } = useLanguage();
+  const { user, userProfile, logout, loading } = useAuth();
 
-  // Sample data
+  // Sample data with multilingual support
   const deities = [
-    { name: 'Ganesha', icon: '🐘', count: 25, color: 'bg-orange-100 border-orange-200' },
-    { name: 'Krishna', icon: '🪈', count: 18, color: 'bg-blue-100 border-blue-200' },
-    { name: 'Shiva', icon: '🔱', count: 22, color: 'bg-purple-100 border-purple-200' },
-    { name: 'Durga', icon: '🌺', count: 15, color: 'bg-pink-100 border-pink-200' },
-    { name: 'Rama', icon: '🏹', count: 12, color: 'bg-green-100 border-green-200' },
-    { name: 'Hanuman', icon: '💪', count: 20, color: 'bg-red-100 border-red-200' },
-    { name: 'Lakshmi', icon: '🪷', count: 14, color: 'bg-yellow-100 border-yellow-200' },
-    { name: 'Saraswati', icon: '🎵', count: 16, color: 'bg-indigo-100 border-indigo-200' },
+    { 
+      name: t.deities.ganesha, 
+      icon: '🐘', 
+      count: 25, 
+      color: 'bg-orange-100 border-orange-200 hover:bg-orange-200',
+      id: 'ganesha'
+    },
+    { 
+      name: t.deities.krishna, 
+      icon: '🪈', 
+      count: 18, 
+      color: 'bg-blue-100 border-blue-200 hover:bg-blue-200',
+      id: 'krishna'
+    },
+    { 
+      name: t.deities.shiva, 
+      icon: '🔱', 
+      count: 22, 
+      color: 'bg-purple-100 border-purple-200 hover:bg-purple-200',
+      id: 'shiva'
+    },
+    { 
+      name: t.deities.durga, 
+      icon: '🌺', 
+      count: 15, 
+      color: 'bg-pink-100 border-pink-200 hover:bg-pink-200',
+      id: 'durga'
+    },
+    { 
+      name: t.deities.rama, 
+      icon: '🏹', 
+      count: 12, 
+      color: 'bg-green-100 border-green-200 hover:bg-green-200',
+      id: 'rama'
+    },
+    { 
+      name: t.deities.hanuman, 
+      icon: '💪', 
+      count: 20, 
+      color: 'bg-red-100 border-red-200 hover:bg-red-200',
+      id: 'hanuman'
+    },
+    { 
+      name: t.deities.lakshmi, 
+      icon: '🪷', 
+      count: 14, 
+      color: 'bg-yellow-100 border-yellow-200 hover:bg-yellow-200',
+      id: 'lakshmi'
+    },
+    { 
+      name: t.deities.saraswati, 
+      icon: '🎵', 
+      count: 16, 
+      color: 'bg-indigo-100 border-indigo-200 hover:bg-indigo-200',
+      id: 'saraswati'
+    },
   ];
 
   const popularAartis = [
     {
-      title: 'Ganesha Aarti',
-      deity: 'Ganesha',
+      title: isMarathi ? 'गणेश आरती' : 'Ganesha Aarti',
+      deity: t.deities.ganesha,
       duration: '4:32',
       popularity: 95,
-      language: 'Hindi',
+      language: isMarathi ? 'मराठी' : 'Marathi',
       singers: 1250,
-      description: 'Traditional aarti for Lord Ganesha'
+      description: `${t.aarti.traditional} ${t.deities.ganesha}`
     },
     {
-      title: 'Om Jai Jagdish Hare',
-      deity: 'Universal',
+      title: isMarathi ? 'ॐ जै जगदीश हरे' : 'Om Jai Jagdish Hare',
+      deity: isMarathi ? 'सर्वांसाठी' : 'Universal',
       duration: '6:15',
       popularity: 88,
-      language: 'Hindi',
+      language: isMarathi ? 'संस्कृत' : 'Sanskrit',
       singers: 980,
-      description: 'Universal aarti for all deities'
+      description: isMarathi ? 'सर्व देवतांसाठी सार्वत्रिक आरती' : 'Universal aarti for all deities'
     },
     {
-      title: 'Shiva Aarti',
-      deity: 'Shiva',
+      title: isMarathi ? 'शिव आरती' : 'Shiva Aarti',
+      deity: t.deities.shiva,
       duration: '5:20',
       popularity: 82,
-      language: 'Sanskrit',
+      language: isMarathi ? 'संस्कृत' : 'Sanskrit',
       singers: 750,
-      description: 'Sacred aarti for Lord Shiva'
+      description: `${t.aarti.sacred} ${t.deities.shiva}`
     },
     {
-      title: 'Krishna Aarti',
-      deity: 'Krishna',
+      title: isMarathi ? 'कृष्ण आरती' : 'Krishna Aarti',
+      deity: t.deities.krishna,
       duration: '4:45',
       popularity: 90,
-      language: 'Hindi',
+      language: isMarathi ? 'मराठी' : 'Marathi',
       singers: 890,
-      description: 'Devotional aarti for Lord Krishna'
+      description: `${t.aarti.devotional} ${t.deities.krishna}`
     },
   ];
 
-  const quickFilters = ['Popular', 'Recent', 'Favorites', 'Festival Special'];
+  const quickFilters = [
+    t.filters.popular,
+    t.filters.recent,
+    t.filters.favorites,
+    t.filters.festivalSpecial
+  ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // If loading, show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
@@ -84,8 +164,8 @@ const AartiSabhaLanding = () => {
                 🕉️
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900">Aarti Sabha</h1>
-                <p className="text-xs text-gray-600">Digital Aarti Book & Sabha Companion</p>
+                <h1 className={`text-xl font-bold text-gray-900 ${isMarathi ? 'font-serif' : ''}`}>{t.header.title}</h1>
+                <p className="text-xs text-gray-600">{t.header.tagline}</p>
               </div>
             </div>
 
@@ -94,7 +174,7 @@ const AartiSabhaLanding = () => {
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
-                  placeholder="Search aartis, deities, or festivals..."
+                  placeholder={t.search.placeholder}
                   value={searchQuery}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                   className="pl-10 bg-white/60 border-amber-200 focus:border-orange-400"
@@ -104,17 +184,56 @@ const AartiSabhaLanding = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLanguage(language === 'en' ? 'mr' : 'en')}
+                className="hover:bg-orange-50"
+              >
                 <Globe className="h-4 w-4 mr-2" />
-                हिंदी
+                {language === 'en' ? 'मराठी' : 'English'}
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="hover:bg-orange-50">
                 <Settings className="h-4 w-4" />
               </Button>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="" />
-                <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-              </Avatar>
+              
+              {user ? (
+                <div className="flex items-center space-x-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.photoURL || ''} />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleLogout}
+                    className="text-gray-600 hover:text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => router.push('/login')}
+                    className="text-orange-600 hover:bg-orange-50"
+                  >
+                    <LogIn className="h-4 w-4 mr-1" />
+                    {t.auth.login}
+                  </Button>
+                  <Button 
+                    size="sm"
+                    onClick={() => router.push('/signup')}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    {t.auth.signup}
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -133,7 +252,7 @@ const AartiSabhaLanding = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
-                placeholder="Search aartis..."
+                placeholder={t.search.mobilePlaceholder}
                 value={searchQuery}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-white/60 border-amber-200"
@@ -146,18 +265,52 @@ const AartiSabhaLanding = () => {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-amber-200 bg-white/95 backdrop-blur-lg">
             <div className="container mx-auto px-4 py-4 space-y-3">
-              <Button variant="ghost" className="w-full justify-start">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start"
+                onClick={() => setLanguage(language === 'en' ? 'mr' : 'en')}
+              >
                 <Globe className="h-4 w-4 mr-2" />
-                Language: हिंदी
+                {t.header.language}: {language === 'en' ? 'मराठी' : 'English'}
               </Button>
               <Button variant="ghost" className="w-full justify-start">
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                {t.header.settings}
               </Button>
-              <Button variant="ghost" className="w-full justify-start">
-                <User className="h-4 w-4 mr-2" />
-                Profile
-              </Button>
+              
+              {user ? (
+                <>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <User className="h-4 w-4 mr-2" />
+                    {userProfile?.displayName || user.email}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 hover:text-red-700"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-orange-600"
+                    onClick={() => router.push('/login')}
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    {t.auth.login}
+                  </Button>
+                  <Button 
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                    onClick={() => router.push('/signup')}
+                  >
+                    {t.auth.signup}
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -168,25 +321,25 @@ const AartiSabhaLanding = () => {
         {/* Hero Section */}
         <section className="mb-12">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
-              Experience Divine <span className="text-orange-600">Harmony</span>
+            <h2 className={`text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 ${isMarathi ? 'font-serif' : ''}`}>
+              {t.hero.title} <span className="text-orange-600">{t.hero.titleHighlight}</span>
             </h2>
             <p className="text-lg md:text-xl text-gray-600 mb-6 max-w-2xl mx-auto">
-              Connect with family across distances through synchronized aarti singing with SwarSetu technology
+              {t.hero.subtitle}
             </p>
             
             {/* Hero CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8">
                 <Users className="h-5 w-5 mr-2" />
-                Host Sabha
+                {t.hero.hostSabha}
               </Button>
               <Button size="lg" variant="outline" className="border-orange-600 text-orange-600 hover:bg-orange-50 px-8">
                 <Play className="h-5 w-5 mr-2" />
-                Join Sabha
+                {t.hero.joinSabha}
               </Button>
               <Button size="lg" variant="ghost" className="text-gray-600 hover:text-gray-900">
-                Browse Aartis
+                {t.hero.browseAartis}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
@@ -209,20 +362,20 @@ const AartiSabhaLanding = () => {
         {/* Deity Browse Section */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-gray-900">Browse by Deity</h3>
+            <h3 className={`text-2xl font-bold text-gray-900 ${isMarathi ? 'font-serif' : ''}`}>{t.sections.browseByDeity}</h3>
             <Button variant="ghost" className="text-orange-600 hover:text-orange-700">
-              View All
+              {t.actions.viewAll}
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             {deities.map((deity) => (
-              <Card key={deity.name} className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${deity.color}`}>
-                <CardContent className="p-6 text-center">
-                  <div className="text-4xl mb-3">{deity.icon}</div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{deity.name}</h4>
-                  <p className="text-sm text-gray-600">{deity.count} aartis</p>
+              <Card key={deity.id} className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 ${deity.color} group`}>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="text-3xl md:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{deity.icon}</div>
+                  <h4 className={`font-semibold text-gray-900 mb-1 text-sm md:text-base ${isMarathi ? 'font-serif' : ''}`}>{deity.name}</h4>
+                  <p className="text-xs md:text-sm text-gray-600">{deity.count} {t.deities.aartis}</p>
                 </CardContent>
               </Card>
             ))}
@@ -232,36 +385,36 @@ const AartiSabhaLanding = () => {
         {/* Popular Aartis Section */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-gray-900">Popular Aartis</h3>
+            <h3 className={`text-2xl font-bold text-gray-900 ${isMarathi ? 'font-serif' : ''}`}>{t.sections.popularAartis}</h3>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-orange-200 text-orange-600 hover:bg-orange-50">
                 <Filter className="h-4 w-4 mr-2" />
-                Filter
+                {t.actions.filter}
               </Button>
               <Button variant="ghost" className="text-orange-600 hover:text-orange-700">
-                View All
+                {t.actions.viewAll}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {popularAartis.map((aarti, index) => (
-              <Card key={index} className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 bg-white/60 border-amber-200">
+              <Card key={index} className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/60 border-amber-200 group">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg text-gray-900">{aarti.title}</CardTitle>
+                      <CardTitle className={`text-lg text-gray-900 group-hover:text-orange-600 transition-colors ${isMarathi ? 'font-serif' : ''}`}>{aarti.title}</CardTitle>
                       <CardDescription className="text-gray-600">{aarti.description}</CardDescription>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500">
+                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 transition-colors">
                       <Heart className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
-                    <Badge variant="outline" className="border-orange-200 text-orange-700">
+                    <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
                       {aarti.deity}
                     </Badge>
                     <div className="flex items-center space-x-1">
@@ -271,18 +424,18 @@ const AartiSabhaLanding = () => {
                   </div>
                   
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                    <span>Duration: {aarti.duration}</span>
+                    <span>{t.aarti.duration}: {aarti.duration}</span>
                     <span>{aarti.language}</span>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-1">
                       <Users className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">{aarti.singers} singers</span>
+                      <span className="text-sm text-gray-600">{aarti.singers} {t.aarti.singers}</span>
                     </div>
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white">
+                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white group-hover:scale-105 transition-transform">
                       <Play className="h-4 w-4 mr-1" />
-                      Start
+                      {t.aarti.start}
                     </Button>
                   </div>
                 </CardContent>
@@ -294,41 +447,43 @@ const AartiSabhaLanding = () => {
         {/* SwarSetu Features Section */}
         <section className="mb-12">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">SwarSetu Sync Technology</h3>
+            <h3 className={`text-2xl font-bold text-gray-900 mb-4 ${isMarathi ? 'font-serif' : ''}`}>{t.sections.swarSetuFeatures}</h3>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Real-time synchronization technology that keeps your family connected during aarti, 
-              no matter where you are in the world.
+              {isMarathi 
+                ? 'वास्तविक वेळेत समक्रमण तंत्रज्ञान जे तुमच्या कुटुंबाला आरती दरम्यान जोडलेले ठेवते, तुम्ही जगात कुठेही असलात तरी.'
+                : 'Real-time synchronization technology that keeps your family connected during aarti, no matter where you are in the world.'
+              }
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-white/60 border-amber-200">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            <Card className="bg-white/60 border-amber-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center">
-                <div className="h-12 w-12 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
                   <Users className="h-6 w-6 text-orange-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Family Connect</h4>
-                <p className="text-gray-600 text-sm">Sync with family members across different locations in real-time</p>
+                <h4 className={`font-semibold text-gray-900 mb-2 ${isMarathi ? 'font-serif' : ''}`}>{t.features.familyConnect.title}</h4>
+                <p className="text-gray-600 text-sm">{t.features.familyConnect.description}</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/60 border-amber-200">
+            <Card className="bg-white/60 border-amber-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center">
-                <div className="h-12 w-12 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
                   <Play className="h-6 w-6 text-green-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Perfect Timing</h4>
-                <p className="text-gray-600 text-sm">Advanced sync ensures everyone starts and follows together</p>
+                <h4 className={`font-semibold text-gray-900 mb-2 ${isMarathi ? 'font-serif' : ''}`}>{t.features.perfectTiming.title}</h4>
+                <p className="text-gray-600 text-sm">{t.features.perfectTiming.description}</p>
               </CardContent>
             </Card>
             
-            <Card className="bg-white/60 border-amber-200 md:col-span-2 lg:col-span-1">
+            <Card className="bg-white/60 border-amber-200 md:col-span-2 xl:col-span-1 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
               <CardContent className="p-6 text-center">
-                <div className="h-12 w-12 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Globe className="h-6 w-6 text-blue-600" />
                 </div>
-                <h4 className="font-semibold text-gray-900 mb-2">Global Sabha</h4>
-                <p className="text-gray-600 text-sm">Join public sabhas during festivals with devotees worldwide</p>
+                <h4 className={`font-semibold text-gray-900 mb-2 ${isMarathi ? 'font-serif' : ''}`}>{t.features.globalSabha.title}</h4>
+                <p className="text-gray-600 text-sm">{t.features.globalSabha.description}</p>
               </CardContent>
             </Card>
           </div>
@@ -430,19 +585,27 @@ const AartiSabhaLanding = () => {
         <div className="grid grid-cols-4 h-16">
           <Button variant="ghost" className="flex-col space-y-1 h-full">
             <Search className="h-5 w-5" />
-            <span className="text-xs">Browse</span>
+            <span className="text-xs">{t.navigation.browse}</span>
           </Button>
           <Button variant="ghost" className="flex-col space-y-1 h-full">
             <Heart className="h-5 w-5" />
-            <span className="text-xs">Favorites</span>
+            <span className="text-xs">{t.navigation.favorites}</span>
           </Button>
           <Button variant="ghost" className="flex-col space-y-1 h-full">
             <Users className="h-5 w-5" />
-            <span className="text-xs">Sabha</span>
+            <span className="text-xs">{t.navigation.sabha}</span>
           </Button>
-          <Button variant="ghost" className="flex-col space-y-1 h-full">
+          <Button variant="ghost" className="flex-col space-y-1 h-full" onClick={() => {
+            if (user) {
+              // Navigate to profile if logged in
+              router.push('/profile');
+            } else {
+              // Navigate to login if not logged in
+              router.push('/login');
+            }
+          }}>
             <User className="h-5 w-5" />
-            <span className="text-xs">Profile</span>
+            <span className="text-xs">{user ? t.navigation.profile : t.auth.login}</span>
           </Button>
         </div>
       </nav>
@@ -457,19 +620,22 @@ const AartiSabhaLanding = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Start or Join Sabha</DialogTitle>
+              <DialogTitle className={isMarathi ? 'font-serif' : ''}>{t.dialog.startJoinSabha}</DialogTitle>
               <DialogDescription>
-                Connect with family and friends for synchronized aarti singing
+                {isMarathi 
+                  ? 'समक्रमित आरती गायनासाठी कुटुंब आणि मित्रांशी जोडा'
+                  : 'Connect with family and friends for synchronized aarti singing'
+                }
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
                 <Users className="h-4 w-4 mr-2" />
-                Host New Sabha
+                {t.hero.hostSabha}
               </Button>
               <Button variant="outline" className="w-full border-orange-600 text-orange-600 hover:bg-orange-50">
                 <Play className="h-4 w-4 mr-2" />
-                Join with Code
+                {t.hero.joinSabha}
               </Button>
             </div>
           </DialogContent>

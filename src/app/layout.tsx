@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import PWAInstaller from "@/components/PWAInstaller";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Initialize environment logging silently (this will execute and log to console)
 import '@/config/env';
@@ -17,13 +19,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aarti App",
-  description: "Environment-aware Progressive Web App",
+  title: "Aarti Sabha - Digital Devotional Experience",
+  description: "Connect with family across distances through synchronized aarti singing with SwarSetu technology",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Aarti App",
+    title: "Aarti Sabha",
   },
 };
 
@@ -51,8 +53,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PWAInstaller />
-        {children}
+        <LanguageProvider>
+          <AuthProvider>
+            <PWAInstaller />
+            {children}
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

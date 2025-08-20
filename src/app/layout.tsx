@@ -4,6 +4,7 @@ import "./globals.css";
 import PWAInstaller from "@/components/PWAInstaller";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster } from "@/components/ui/sonner";
 
 // Initialize environment logging silently (this will execute and log to console)
 import '@/config/env';
@@ -57,6 +58,7 @@ export default function RootLayout({
           <AuthProvider>
             <PWAInstaller />
             {children}
+            <Toaster />
           </AuthProvider>
         </LanguageProvider>
       </body>

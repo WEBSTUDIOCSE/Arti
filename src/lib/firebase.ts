@@ -3,7 +3,6 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
 import { firebaseConfig, ENVIRONMENT } from '@/config/env';
 
 // Initialize Firebase
@@ -14,8 +13,8 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 
-// Analytics (only initialize on client side)
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+// Analytics (disabled for now to avoid blocking issues)
+export const analytics = null;
 
 // Log Firebase initialization
 console.log(`🔥 Firebase initialized for ${ENVIRONMENT} environment`);

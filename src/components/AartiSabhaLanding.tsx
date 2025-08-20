@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import BreakpointIndicator from './BreakpointIndicator';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import AartiList from '@/components/AartiList';
 
 const AartiSabhaLanding = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -363,7 +364,11 @@ const AartiSabhaLanding = () => {
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h3 className={`text-2xl font-bold text-gray-900 ${isMarathi ? 'font-serif' : ''}`}>{t.sections.browseByDeity}</h3>
-            <Button variant="ghost" className="text-orange-600 hover:text-orange-700">
+            <Button 
+              variant="ghost" 
+              className="text-orange-600 hover:text-orange-700"
+              onClick={() => router.push('/browse')}
+            >
               {t.actions.viewAll}
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
@@ -371,7 +376,11 @@ const AartiSabhaLanding = () => {
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
             {deities.map((deity) => (
-              <Card key={deity.id} className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 ${deity.color} group`}>
+              <Card 
+                key={deity.id} 
+                className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-2 ${deity.color} group`}
+                onClick={() => router.push(`/browse?deity=${deity.id}`)}
+              >
                 <CardContent className="p-4 md:p-6 text-center">
                   <div className="text-3xl md:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{deity.icon}</div>
                   <h4 className={`font-semibold text-gray-900 mb-1 text-sm md:text-base ${isMarathi ? 'font-serif' : ''}`}>{deity.name}</h4>
@@ -398,50 +407,7 @@ const AartiSabhaLanding = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
-            {popularAartis.map((aarti, index) => (
-              <Card key={index} className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/60 border-amber-200 group">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className={`text-lg text-gray-900 group-hover:text-orange-600 transition-colors ${isMarathi ? 'font-serif' : ''}`}>{aarti.title}</CardTitle>
-                      <CardDescription className="text-gray-600">{aarti.description}</CardDescription>
-                    </div>
-                    <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500 transition-colors">
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between mb-4">
-                    <Badge variant="outline" className="border-orange-200 text-orange-700 bg-orange-50">
-                      {aarti.deity}
-                    </Badge>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm text-gray-600">{aarti.popularity}%</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                    <span>{t.aarti.duration}: {aarti.duration}</span>
-                    <span>{aarti.language}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-1">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">{aarti.singers} {t.aarti.singers}</span>
-                    </div>
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white group-hover:scale-105 transition-transform">
-                      <Play className="h-4 w-4 mr-1" />
-                      {t.aarti.start}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <AartiList filter="popular" limit={6} />
         </section>
 
         {/* SwarSetu Features Section */}
@@ -583,7 +549,11 @@ const AartiSabhaLanding = () => {
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-amber-200">
         <div className="grid grid-cols-4 h-16">
-          <Button variant="ghost" className="flex-col space-y-1 h-full">
+          <Button 
+            variant="ghost" 
+            className="flex-col space-y-1 h-full"
+            onClick={() => router.push('/browse')}
+          >
             <Search className="h-5 w-5" />
             <span className="text-xs">{t.navigation.browse}</span>
           </Button>

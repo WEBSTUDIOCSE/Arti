@@ -1,6 +1,6 @@
 // Environment Configuration
 // Set this to true for UAT, false for PROD
-export const IS_UAT_ENVIRONMENT = false; // Change this to switch environments
+export const IS_UAT_ENVIRONMENT = true; // Change this to switch environments
 
 // Firebase Configuration Types
 interface FirebaseConfig {

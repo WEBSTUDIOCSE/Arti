@@ -11,28 +11,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Upload, Save, X, Plus } from 'lucide-react';
+import { Upload, Save, X, Plus, Minus, Eye, EyeOff, Edit } from 'lucide-react';
 import { AartiFormData, DEITY_OPTIONS, DIFFICULTY_OPTIONS, COMMON_TAGS, DeityType, DifficultyType } from '@/types/aarti';
 import { createAarti, generateSlug } from '@/services/aartiService';
+
+interface Stanza {
+  id: string;
+  hinglish: string;
+  marathi: string;
+}
 
 const AartiUploadForm: React.FC = () => {
   const { t, isMarathi } = useLanguage();
   
-  const [formData, setFormData] = useState<AartiFormData>({
+  // Enhanced form data structure
+  const [formData, setFormData] = useState<Omit<AartiFormData, 'lyrics'>>({
     deity: 'ganesha',
     title: { hinglish: '', marathi: '' },
-    lyrics: { hinglish: '', marathi: '' },
-    duration: 0,
     difficulty: 'easy',
     tags: [],
     isPopular: false,
     isActive: true,
   });
 
+  const [stanzas, setStanzas] = useState<Stanza[]>([
+    { id: '1', hinglish: '', marathi: '' }
+  ]);
+
   const [customTag, setCustomTag] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [activeLanguage, setActiveLanguage] = useState<'hinglish' | 'marathi'>('hinglish');
+  const [bulkText, setBulkText] = useState<{hinglish: string, marathi: string}>({
+    hinglish: '',
+    marathi: ''
+  });
+  const [showBulkInput, setShowBulkInput] = useState(true);
 
-  const handleInputChange = (field: keyof AartiFormData, value: any) => {
+  const handleInputChange = (field: keyof typeof formData, value: string | boolean | string[] | DeityType | DifficultyType) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -43,11 +59,151 @@ const AartiUploadForm: React.FC = () => {
     }));
   };
 
-  const handleLyricsChange = (lang: 'hinglish' | 'marathi', value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      lyrics: { ...prev.lyrics, [lang]: value }
-    }));
+  // New stanza handlers
+  const addStanza = () => {
+    const newStanza: Stanza = {
+      id: Date.now().toString(),
+      hinglish: '',
+      marathi: ''
+    };
+    setStanzas(prev => [...prev, newStanza]);
+  };
+
+  const removeStanza = (id: string) => {
+    if (stanzas.length > 1) {
+      setStanzas(prev => prev.filter(stanza => stanza.id !== id));
+    }
+  };
+
+  const updateStanza = (id: string, lang: 'hinglish' | 'marathi', value: string) => {
+    setStanzas(prev => 
+      prev.map(stanza => 
+        stanza.id === id 
+          ? { ...stanza, [lang]: value }
+          : stanza
+      )
+    );
+  };
+
+  // Convert stanzas to lyrics format for saving
+  const stanzasToLyrics = () => {
+    const hinglishLyrics = stanzas
+      .map(stanza => stanza.hinglish.trim())
+      .filter(content => content)
+      .join('\\n\\n');
+    
+    const marathiLyrics = stanzas
+      .map(stanza => stanza.marathi.trim())
+      .filter(content => content)
+      .join('\\n\\n');
+
+    return {
+      hinglish: hinglishLyrics,
+      marathi: marathiLyrics
+    };
+  };
+
+  // Auto-detect and split stanzas from bulk text
+  const autoDetectStanzas = (text: string): string[] => {
+    if (!text.trim()) return [];
+    
+    // Enhanced pattern detection for Sanskrit/Marathi aartis
+    let stanzas: string[] = [];
+    
+    // Method 1: Split by traditional Sanskrit/Marathi stanza markers (॥)
+    if (text.includes('॥')) {
+      // First, clean the title if it exists
+      let cleanText = text.replace(/^॥.*॥\s*/, '').trim(); // Remove title like "॥ श्री गणपतीची आरती ॥"
+      
+      stanzas = cleanText
+        .split('॥')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+      
+      // For traditional aartis, keep stanza + refrain pairs together
+      // Don't separate refrains - they belong with their preceding stanza
+      const processedStanzas: string[] = [];
+      
+      for (let i = 0; i < stanzas.length; i += 2) {
+        const mainStanza = stanzas[i];
+        const refrain = stanzas[i + 1];
+        
+        if (mainStanza && refrain) {
+          // Combine main stanza with its refrain
+          processedStanzas.push(`${mainStanza}॥\n\n${refrain}॥`);
+        } else if (mainStanza) {
+          // Last stanza without refrain
+          processedStanzas.push(`${mainStanza}॥`);
+        }
+      }
+      
+      stanzas = processedStanzas;
+    }
+    
+    // Method 2: Split by double line breaks (backup method)
+    if (stanzas.length === 0) {
+      stanzas = text
+        .split(/\n\s*\n+/) 
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    }
+
+    // Method 3: Intelligent line grouping (fallback)
+    if (stanzas.length <= 1) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      
+      // For Sanskrit/Marathi aartis, typically 4 lines per stanza
+      if (lines.length >= 4) {
+        stanzas = [];
+        const linesPerStanza = 4; // Standard for most aartis
+        
+        for (let i = 0; i < lines.length; i += linesPerStanza) {
+          const stanzaLines = lines.slice(i, i + linesPerStanza);
+          if (stanzaLines.length >= 2) { // Minimum 2 lines for a stanza
+            stanzas.push(stanzaLines.join('\n'));
+          }
+        }
+      }
+    }
+
+    return stanzas;
+  };
+
+  // Parse bulk text and convert to individual stanzas - Enhanced for both languages
+  const parseBulkText = () => {
+    const hinglishStanzas = autoDetectStanzas(bulkText.hinglish);
+    const marathiStanzas = autoDetectStanzas(bulkText.marathi);
+    
+    if (hinglishStanzas.length === 0 && marathiStanzas.length === 0) {
+      toast.error("Please enter text in at least one language!");
+      return;
+    }
+
+    // Determine the maximum number of stanzas from either language
+    const maxStanzas = Math.max(hinglishStanzas.length, marathiStanzas.length);
+    const newStanzas: Stanza[] = [];
+
+    for (let i = 0; i < maxStanzas; i++) {
+      newStanzas.push({
+        id: `${Date.now()}_${i}`,
+        hinglish: hinglishStanzas[i] || '',
+        marathi: marathiStanzas[i] || ''
+      });
+    }
+
+    // Replace existing stanzas
+    setStanzas(newStanzas);
+
+    // Show success message
+    const hinglishCount = hinglishStanzas.length;
+    const marathiCount = marathiStanzas.length;
+    const detectionMethod = (bulkText.hinglish.includes('॥') || bulkText.marathi.includes('॥')) ? '॥ markers' : 'line patterns';
+    
+    toast.success(`🎯 Auto-detected stanzas: ${hinglishCount} Hinglish + ${marathiCount} Marathi using ${detectionMethod}!`);
+    
+    // Clear bulk text and hide bulk input
+    setBulkText({ hinglish: '', marathi: '' });
+    setShowBulkInput(false);
   };
 
   const addTag = (tag: string) => {
@@ -84,18 +240,13 @@ const AartiUploadForm: React.FC = () => {
       return false;
     }
 
-    if (!formData.lyrics.hinglish.trim()) {
-      toast.error("Validation Error: Hinglish lyrics are required");
-      return false;
-    }
+    // Validate stanzas
+    const validStanzas = stanzas.filter(stanza => 
+      stanza.hinglish.trim() && stanza.marathi.trim()
+    );
 
-    if (!formData.lyrics.marathi.trim()) {
-      toast.error("Validation Error: Marathi lyrics are required");
-      return false;
-    }
-
-    if (formData.duration <= 0) {
-      toast.error("Validation Error: Duration must be greater than 0");
+    if (validStanzas.length === 0) {
+      toast.error("Validation Error: At least one complete stanza (both languages) is required");
       return false;
     }
 
@@ -110,7 +261,13 @@ const AartiUploadForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const aartiId = await createAarti(formData);
+      const lyrics = stanzasToLyrics();
+      const completeFormData: AartiFormData = {
+        ...formData,
+        lyrics
+      };
+
+      const aartiId = await createAarti(completeFormData);
       
       toast.success(`Aarti "${formData.title.hinglish}" uploaded successfully!`);
 
@@ -118,13 +275,12 @@ const AartiUploadForm: React.FC = () => {
       setFormData({
         deity: 'ganesha',
         title: { hinglish: '', marathi: '' },
-        lyrics: { hinglish: '', marathi: '' },
-        duration: 0,
         difficulty: 'easy',
         tags: [],
         isPopular: false,
         isActive: true,
       });
+      setStanzas([{ id: '1', hinglish: '', marathi: '' }]);
 
       console.log('✅ Aarti uploaded successfully with ID:', aartiId);
     } catch (error) {
@@ -209,70 +365,303 @@ const AartiUploadForm: React.FC = () => {
                 </div>
               )}
 
-              {/* Lyrics Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700">
-                    {isMarathi ? 'गीत (हिंग्लिश)' : 'Lyrics (Hinglish)'}
-                  </Label>
-                  <Textarea
-                    value={formData.lyrics.hinglish}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleLyricsChange('hinglish', e.target.value)}
-                    placeholder="Enter complete aarti lyrics in Hinglish..."
-                    className="border-orange-200 focus:border-orange-500 min-h-[200px] resize-y"
-                    required
-                  />
+              {/* Auto-Detection Bulk Input */}
+              {showBulkInput && (
+                <Card className="border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-purple-50 shadow-lg">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
+                          <Upload className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-700 to-purple-700 bg-clip-text text-transparent">
+                            🎯 {isMarathi ? 'स्मार्ट ऑटो-डिटेक्शन' : 'Smart Auto-Detection'}
+                          </CardTitle>
+                          <p className="text-sm text-blue-600 mt-1">
+                            {isMarathi ? 'दोन्ही भाषांमध्ये आरती पेस्ट करा, आम्ही आपोआप श्लोक विभाजित करू!' : 'Paste aarti in both languages, we\'ll auto-split into stanzas!'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowBulkInput(false)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-full"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Hinglish Input */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold text-blue-700 flex items-center space-x-2">
+                          <span className="p-1 bg-blue-100 rounded text-xs">EN</span>
+                          <span>Hinglish - Complete Text</span>
+                        </Label>
+                        <Textarea
+                          value={bulkText.hinglish}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBulkText(prev => ({ ...prev, hinglish: e.target.value }))}
+                          placeholder={`Paste complete aarti in Hinglish here...
+
+Example:
+Sukhkarta Dukhaharta Varta Vighnachi
+Nurvikar Nirvikalpa Agadhachi
+
+Sarvangi Sundar Shendurarangi
+Ratnasinghasana Rajitangi
+
+Jay Dev Jay Dev Jay Mangalmurti
+Darshan Matre Man Kamana Purti`}
+                          className="border-2 border-blue-200 focus:border-blue-500 min-h-[180px] resize-y bg-white/80 backdrop-blur-sm rounded-lg shadow-sm transition-all duration-200"
+                          rows={8}
+                        />
+                      </div>
+
+                      {/* Marathi Input */}
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold text-purple-700 flex items-center space-x-2">
+                          <span className="p-1 bg-purple-100 rounded text-xs font-serif">मर</span>
+                          <span>Marathi - संपूर्ण मजकूर</span>
+                        </Label>
+                        <Textarea
+                          value={bulkText.marathi}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBulkText(prev => ({ ...prev, marathi: e.target.value }))}
+                          placeholder={`संपूर्ण आरती मराठीत इथे पेस्ट करा...
+
+उदाहरण (॥ चिन्हाने श्लोक विभक्त करा):
+सुखकर्ता दुःखहर्ता वार्ता विघ्नाची।
+नुरवी पुरवी प्रेम कृपा जयाची।
+सर्वांगी सुन्दर उटि शेंदुराची।
+कण्ठी झळके माळ मुक्ताफळांची॥
+
+जय देव जय देव जय मंगलमूर्ति।
+दर्शनमात्रे मनकामना पुरती॥`}
+                          className="border-2 border-purple-200 focus:border-purple-500 min-h-[180px] resize-y font-serif bg-white/80 backdrop-blur-sm rounded-lg shadow-sm transition-all duration-200"
+                          rows={8}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Single Auto-Detect Button */}
+                    <div className="flex flex-col items-center space-y-3 pt-4 border-t border-gradient-to-r from-blue-200 to-purple-200">
+                      <Button
+                        type="button"
+                        onClick={parseBulkText}
+                        disabled={!bulkText.hinglish.trim() && !bulkText.marathi.trim()}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        size="lg"
+                      >
+                        <Upload className="h-5 w-5 mr-2" />
+                        🎯 {isMarathi ? 'दोन्ही भाषा ऑटो-डिटेक्ट करा' : 'Auto-Detect Both Languages'}
+                      </Button>
+                      
+                      <p className="text-xs text-center text-blue-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
+                        💡 {isMarathi ? 'टिप: ॥ चिन्ह वापरा किंवा दुहेरी लाइन ब्रेकने श्लोक विभक्त करा' : 'Tip: Use ॥ markers or double line breaks to separate stanzas'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!showBulkInput && (
+                <div className="flex justify-center mb-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowBulkInput(true)}
+                    className="border-2 border-blue-300 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100 hover:border-blue-400 font-semibold px-6 py-3 rounded-full shadow-md transition-all duration-200 hover:shadow-lg"
+                    size="lg"
+                  >
+                    <Upload className="h-5 w-5 mr-2" />
+                    🎯 {isMarathi ? 'स्मार्ट ऑटो-डिटेक्शन वापरा' : 'Use Smart Auto-Detection'}
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700">
-                    {isMarathi ? 'गीत (मराठी)' : 'Lyrics (Marathi)'}
-                  </Label>
-                  <Textarea
-                    value={formData.lyrics.marathi}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleLyricsChange('marathi', e.target.value)}
-                    placeholder="संपूर्ण आरती मराठीत टाका..."
-                    className="border-orange-200 focus:border-orange-500 min-h-[200px] resize-y font-serif"
-                    required
-                  />
+              )}
+
+              {/* Stanza-by-Stanza Input */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full">
+                      <Edit className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <Label className="text-xl font-bold text-orange-800">
+                        ✏️ {isMarathi ? 'मॅन्युअल आरती श्लोक' : 'Manual Aarti Stanzas'}
+                      </Label>
+                      <p className="text-sm text-orange-600 mt-1">
+                        {isMarathi ? 'प्रत्येक श्लोक स्वतंत्रपणे संपादित करा किंवा फाईन-ट्यून करा' : 'Edit each stanza individually or fine-tune auto-detected content'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPreviewMode(!previewMode)}
+                      className="border-orange-200 hover:border-orange-300"
+                    >
+                      {previewMode ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                      {previewMode ? 'Edit' : 'Preview'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveLanguage(activeLanguage === 'hinglish' ? 'marathi' : 'hinglish')}
+                      className="border-orange-200 hover:border-orange-300"
+                    >
+                      {activeLanguage === 'hinglish' ? '🅷' : 'म'}
+                    </Button>
+                    {stanzas.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setStanzas([{ id: '1', hinglish: '', marathi: '' }]);
+                          setShowBulkInput(true);
+                          toast.info('🔄 Reset to start fresh!');
+                        }}
+                        className="border-red-200 text-red-600 hover:border-red-300 hover:text-red-700"
+                      >
+                        🔄 Reset
+                      </Button>
+                    )}
+                  </div>
                 </div>
+
+                {previewMode ? (
+                  /* Preview Mode */
+                  <div className="space-y-4">
+                    {stanzas.map((stanza, index) => (
+                      <Card key={stanza.id} className="bg-gradient-to-br from-orange-50 via-white to-yellow-50 border-orange-200">
+                        <CardContent className="p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <div className="ml-3 h-px flex-1 bg-orange-200" />
+                          </div>
+                          <div className="space-y-3">
+                            {stanza.hinglish && (
+                              <div className="text-lg leading-relaxed text-gray-800">
+                                {stanza.hinglish.split('\n').map((line, i) => (
+                                  <div key={i}>{line}</div>
+                                ))}
+                              </div>
+                            )}
+                            {stanza.marathi && (
+                              <div className="text-xl leading-relaxed font-serif text-gray-800 mt-3 pt-3 border-t border-orange-200">
+                                {stanza.marathi.split('\n').map((line, i) => (
+                                  <div key={i}>{line}</div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  /* Edit Mode */
+                  <div className="space-y-4">
+                    {stanzas.map((stanza, index) => (
+                      <Card key={stanza.id} className="border-orange-200">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg text-orange-700">
+                              {isMarathi ? `श्लोक ${index + 1}` : `Stanza ${index + 1}`}
+                            </CardTitle>
+                            <div className="flex space-x-2">
+                              {stanzas.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeStanza(stanza.id)}
+                                  className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="text-sm font-semibold text-gray-700">
+                                Hinglish
+                              </Label>
+                              <Textarea
+                                value={stanza.hinglish}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateStanza(stanza.id, 'hinglish', e.target.value)}
+                                placeholder="Enter stanza in Hinglish..."
+                                className="border-orange-200 focus:border-orange-500 min-h-[120px] resize-y"
+                                rows={4}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-sm font-semibold text-gray-700">
+                                Marathi (मराठी)
+                              </Label>
+                              <Textarea
+                                value={stanza.marathi}
+                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateStanza(stanza.id, 'marathi', e.target.value)}
+                                placeholder="श्लोक मराठीत टाका..."
+                                className="border-orange-200 focus:border-orange-500 min-h-[120px] resize-y font-serif"
+                                rows={4}
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    
+                    {/* Add Stanza Button */}
+                    <Card className="border-2 border-dashed border-orange-300 hover:border-orange-400 transition-colors">
+                      <CardContent className="p-8">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={addStanza}
+                          className="w-full border-orange-200 hover:border-orange-300 text-orange-600 hover:text-orange-700"
+                        >
+                          <Plus className="h-5 w-5 mr-2" />
+                          {isMarathi ? 'नवा श्लोक जोडा' : 'Add New Stanza'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </div>
 
-              {/* Duration and Difficulty */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700">
-                    {isMarathi ? 'कालावधी (सेकंदात)' : 'Duration (seconds)'}
-                  </Label>
-                  <Input
-                    type="number"
-                    value={formData.duration}
-                    onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 0)}
-                    placeholder="180"
-                    min="1"
-                    className="border-orange-200 focus:border-orange-500"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-gray-700">
-                    {isMarathi ? 'कठिणता' : 'Difficulty'}
-                  </Label>
-                  <Select value={formData.difficulty} onValueChange={(value: DifficultyType) => handleInputChange('difficulty', value)}>
-                    <SelectTrigger className="border-orange-200 focus:border-orange-500">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DIFFICULTY_OPTIONS.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <span className="flex items-center gap-2">
-                            {option.label}
-                            <span className="text-orange-600 font-serif">({option.labelMarathi})</span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              {/* Difficulty */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-700">
+                  {isMarathi ? 'कठिणता' : 'Difficulty'}
+                </Label>
+                <Select value={formData.difficulty} onValueChange={(value: DifficultyType) => handleInputChange('difficulty', value)}>
+                  <SelectTrigger className="border-orange-200 focus:border-orange-500">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIFFICULTY_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <span className="flex items-center gap-2">
+                          {option.label}
+                          <span className="text-orange-600 font-serif">({option.labelMarathi})</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Tags Section */}

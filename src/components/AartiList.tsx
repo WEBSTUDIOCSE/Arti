@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,7 @@ interface AartiListProps {
 
 const AartiList: React.FC<AartiListProps> = ({ filter = 'all', limit }) => {
   const { t, isMarathi } = useLanguage();
+  const router = useRouter();
   const [aartis, setAartis] = useState<Aarti[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +129,7 @@ const AartiList: React.FC<AartiListProps> = ({ filter = 'all', limit }) => {
         <Card 
           key={aarti.id} 
           className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-white/60 border-amber-200 group"
+          onClick={() => router.push(`/aarti?id=${aarti.id}&deity=${aarti.deity}`)}
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">

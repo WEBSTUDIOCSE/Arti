@@ -19,7 +19,6 @@ export interface Aarti {
   deity: DeityType;
   title: AartiTitle;
   lyrics: AartiLyrics;
-  duration: number; // seconds
   difficulty: DifficultyType;
   tags: string[]; // ['popular', 'daily', 'festival']
   isPopular: boolean;
@@ -32,7 +31,6 @@ export interface AartiFormData {
   deity: DeityType;
   title: AartiTitle;
   lyrics: AartiLyrics;
-  duration: number;
   difficulty: DifficultyType;
   tags: string[];
   isPopular: boolean;

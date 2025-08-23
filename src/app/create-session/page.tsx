@@ -168,7 +168,7 @@ const CreateSessionPage = () => {
                     disabled={isCreating}
                   />
                   <p className="text-xs text-gray-500">
-                    This is how others will see who's hosting the session
+                    This is how others will see who&apos;s hosting the session
                   </p>
                 </div>
 

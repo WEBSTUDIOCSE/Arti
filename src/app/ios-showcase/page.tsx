@@ -29,8 +29,8 @@ const sampleAartis: Aarti[] = [
     tags: ['popular', 'daily', 'morning'],
     isPopular: true,
     isActive: true,
-    createdAt: new Date() as any,
-    updatedAt: new Date() as any
+    createdAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as any,
+    updatedAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as any
   },
   {
     id: 'krishna-aarti-1',
@@ -48,8 +48,8 @@ const sampleAartis: Aarti[] = [
     tags: ['evening', 'traditional'],
     isPopular: false,
     isActive: true,
-    createdAt: new Date() as any,
-    updatedAt: new Date() as any
+    createdAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as any,
+    updatedAt: { seconds: Math.floor(Date.now() / 1000), nanoseconds: 0 } as any
   }
 ];
 
@@ -224,7 +224,7 @@ const IOSUIShowcase = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Select Aartis First</h3>
               <p className="text-gray-600 mb-4">
-                Go to the "Aarti Selector" tab to choose some aartis, then come back to view the session interface
+                Go to the &quot;Aarti Selector&quot; tab to choose some aartis, then come back to view the session interface
               </p>
               <Button
                 onClick={() => setCurrentView('selector')}

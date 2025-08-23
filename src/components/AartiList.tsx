@@ -166,7 +166,7 @@ const AartiList: React.FC<AartiListProps> = ({ filter = 'all', limit }) => {
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <div className="flex items-center space-x-1">
                   <Clock className="h-4 w-4" />
-                  <span>{formatDuration(aarti.duration)}</span>
+                  <span>{formatDuration(300)}</span> {/* Default 5 minutes */}
                 </div>
                 <Badge 
                   variant="outline" 

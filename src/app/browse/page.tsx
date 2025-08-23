@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Filter, Search, Star, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -376,4 +376,12 @@ const BrowsePage = () => {
   );
 };
 
-export default BrowsePage;
+const BrowsePageWrapper = () => {
+  return (
+    <Suspense fallback={<div className="p-4">Loading...</div>}>
+      <BrowsePage />
+    </Suspense>
+  );
+};
+
+export default BrowsePageWrapper;

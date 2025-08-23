@@ -3,12 +3,14 @@
     "title": "Aarti Sabha",
     "tagline": "Digital Aarti Book & Sabha Companion",
     "language": "English",
-    "settings": "Settings"
+    "settings": "Settings",
+    "profile": "Profile"
   },
   "navigation": {
     "browse": "Browse",
     "favorites": "Favorites",
-    "sabha": "Sabha"
+    "sabha": "Sabha",
+    "profile": "Profile"
   },
   "hero": {
     "title": "Experience Divine",
@@ -77,6 +79,11 @@
     "live": "Live",
     "active": "active",
     "members": "members"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout"
   },
   "search": {
     "placeholder": "Search aartis, deities, or festivals...",

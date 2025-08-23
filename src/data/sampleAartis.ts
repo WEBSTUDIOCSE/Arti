@@ -55,7 +55,6 @@ Darshan Maatre Manokaamaana Purti`,
 जय देव जय देव जय मंगलमूर्ती
 दर्शन मात्रे मनोकामना पूर्ती`
     },
-    duration: 180,
     difficulty: 'medium',
     tags: ['popular', 'daily', 'traditional', 'morning'],
     isPopular: true,
@@ -107,7 +106,7 @@ Mata Jaki Parvati Pita Mahadeva`,
 जय गणेश जय गणेश जय गणेश देवा
 माता जकी पार्वती पिता महादेवा`
     },
-    duration: 120,
+
     difficulty: 'easy',
     tags: ['popular', 'daily', 'festival', 'easy', 'beginner'],
     isPopular: true,
@@ -159,7 +158,7 @@ Radhe Krishna Hari Govind Bolo`,
 गोविंद बोलो हरी गोपाळ बोलो
 राधे कृष्ण हरी गोविंद बोलो`
     },
-    duration: 150,
+
     difficulty: 'easy',
     tags: ['popular', 'daily', 'devotional', 'easy'],
     isPopular: true,
@@ -213,7 +212,7 @@ Kandhe Moonj Janeu Saje`,
 हाथ वज्र और ध्वजा विराजे
 कंधे मूंज जनेऊ साजे`
     },
-    duration: 300,
+
     difficulty: 'hard',
     tags: ['popular', 'traditional', 'morning', 'festival'],
     isPopular: true,
@@ -261,7 +260,7 @@ Tumko Nishdin Dhyavat Hari Brahma Shivji`,
 ॐ जय अंबे गौरी मैया जय श्यामा गौरी
 तुमको निशदिन ध्यावत हरी ब्रह्मा शिवजी`
     },
-    duration: 200,
+
     difficulty: 'medium',
     tags: ['popular', 'festival', 'evening', 'traditional'],
     isPopular: true,
@@ -317,7 +316,7 @@ Om Namah Shivaya Shivaya Namah Om`,
 ॐ नमः शिवाय ॐ नमः शिवाय
 ॐ नमः शिवाय शिवाय नमः ॐ`
     },
-    duration: 240,
+
     difficulty: 'medium',
     tags: ['popular', 'daily', 'meditation', 'evening'],
     isPopular: true,

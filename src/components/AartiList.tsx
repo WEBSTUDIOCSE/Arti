@@ -180,7 +180,7 @@ const AartiList: React.FC<AartiListProps> = ({ filter = 'all', limit }) => {
                 </Badge>
               </div>
 
-              {/* Tags */}
+              {/* Tagss */}
               {aarti.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {aarti.tags.slice(0, 3).map((tag) => (

@@ -299,7 +299,7 @@ const IOSAartiSelector = ({
                 isSelected={isAartiSelected(aarti)}
                 onSelect={handleAartiSelect}
                 showSelection={multiSelect}
-                showPreview={true}
+                showPreview={false}
                 className="cursor-pointer"
               />
             ))}

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Sparkles, Play } from 'lucide-react';
+import { ArrowLeft, Users, Sparkles, Play, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,7 @@ import { sessionService } from '@/services/sessionService';
 import { Aarti } from '@/types/aarti';
 import { useLanguage } from '@/contexts/LanguageContext';
 import IOSAartiSelector from '@/components/IOSAartiSelector';
+import AartiStanzaDisplay from '@/components/AartiStanzaDisplay';
 
 const CreateSessionPage = () => {
   const [sessionName, setSessionName] = useState('');
@@ -172,26 +173,46 @@ const CreateSessionPage = () => {
                   </p>
                 </div>
 
-                {/* Selected Aartis Summary */}
+                {/* Selected Aartis Full Display */}
                 {selectedAartis.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
+                  <div className="space-y-4">
+                    <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <Music className="h-4 w-4" />
                       Selected Aartis ({selectedAartis.length})
                     </Label>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <div className="space-y-4 max-h-96 overflow-y-auto rounded-xl bg-gradient-to-b from-orange-50 to-amber-50 p-4">
                       {selectedAartis.map((aarti) => (
-                        <div key={aarti.id} className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-gray-800 truncate">
-                              {isMarathi ? aarti.title.marathi : aarti.title.hinglish}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {aarti.deity.charAt(0).toUpperCase() + aarti.deity.slice(1)}
+                        <div key={aarti.id} className="bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl p-4 space-y-3">
+                          {/* Aarti Header */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-800 text-base mb-1">
+                                {isMarathi ? aarti.title.marathi : aarti.title.hinglish}
+                              </h4>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700 border-orange-200">
+                                  {aarti.deity.charAt(0).toUpperCase() + aarti.deity.slice(1)}
+                                </Badge>
+                                <Badge className="bg-green-500 text-white text-xs">
+                                  Selected
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                          <Badge className="bg-green-500 text-white text-xs">
-                            Selected
-                          </Badge>
+                          
+                          {/* Beautiful Stanza Display - Same as /aarti page */}
+                          <div className="rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200">
+                            <AartiStanzaDisplay
+                              lyrics={isMarathi ? aarti.lyrics.marathi : aarti.lyrics.hinglish}
+                              fontSize={13}
+                              nightMode={false}
+                              contentLanguage={isMarathi ? 'marathi' : 'hinglish'}
+                              maxHeight="180px"
+                              showAllStanzas={false}
+                              className="px-2 py-1"
+                              compact={true}
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>

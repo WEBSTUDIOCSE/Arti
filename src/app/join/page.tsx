@@ -229,14 +229,14 @@ const EnhancedJoinSessionPage = () => {
                       </CardHeader>
 
                       <CardContent className="space-y-4">
-                        {/* Aarti Preview */}
+                        {/* Aarti Full Content */}
                         {preview && (
                           <IOSAartiCard
                             aarti={preview.aarti}
                             isSelected={false}
                             onSelect={() => {}}
                             showSelection={false}
-                            showPreview={true}
+                            showPreview={false}
                             className="border-0 shadow-none bg-gradient-to-r from-amber-50 to-orange-50"
                           />
                         )}

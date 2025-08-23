@@ -1,0 +1,83 @@
+name: UAT Deploy
+
+on:
+  push:
+    branches:
+      - uat
+  workflow_dispatch:
+
+# Add permissions for GitHub token
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: UAT
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build Application
+        run: npm run build
+        env:
+          # Add any environment variables needed for build
+          NODE_ENV: production
+        
+      - name: Create Vercel configuration
+        run: |
+          echo '{
+            "version": 2,
+            "name": "aarti-uat",
+            "public": true,
+            "github": {
+              "enabled": true,
+              "silent": true
+            },
+            "env": {
+              "NODE_ENV": "production"
+            },
+            "build": {
+              "env": {
+                "NODE_ENV": "production"
+              }
+            }
+          }' > vercel.json
+      
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          # Install Vercel CLI
+          npm install -g vercel@latest
+          
+          # Remove any existing .vercel directory that might have old settings
+          rm -rf .vercel
+          
+          # Deploy to Vercel and capture the URL
+          DEPLOYMENT_URL=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes)
+          echo "Deployment URL: $DEPLOYMENT_URL"
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          
+      - name: Update Deployment Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+            exit 1
+          fi

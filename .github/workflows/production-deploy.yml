@@ -1,0 +1,90 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Add permissions for GitHub token
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: Production
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Tests (if available)
+        run: |
+          if [ -f "package.json" ] && grep -q '"test"' package.json; then
+            npm test
+          else
+            echo "No tests found, skipping..."
+          fi
+        
+      - name: Build Application
+        run: npm run build
+        env:
+          NODE_ENV: production
+        
+      - name: Create Vercel configuration
+        run: |
+          echo '{
+            "version": 2,
+            "name": "aarti-production",
+            "public": true,
+            "github": {
+              "enabled": true,
+              "silent": true
+            },
+            "env": {
+              "NODE_ENV": "production"
+            },
+            "build": {
+              "env": {
+                "NODE_ENV": "production"
+              }
+            }
+          }' > vercel.json
+      
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          # Install Vercel CLI
+          npm install -g vercel@latest
+          
+          # Remove any existing .vercel directory
+          rm -rf .vercel
+          
+          # Deploy to production
+          DEPLOYMENT_URL=$(vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes)
+          echo "Production Deployment URL: $DEPLOYMENT_URL"
+          echo "url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          
+      - name: Update Deployment Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Production deployment successful!"
+          else
+            echo "❌ Production deployment failed!"
+            exit 1
+          fi

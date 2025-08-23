@@ -6,7 +6,13 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy:preview": "bash deploy.sh preview",
+    "deploy:uat": "bash deploy.sh uat", 
+    "deploy:production": "bash deploy.sh production",
+    "deploy:preview:win": "powershell -ExecutionPolicy Bypass -File deploy.ps1 preview",
+    "deploy:uat:win": "powershell -ExecutionPolicy Bypass -File deploy.ps1 uat",
+    "deploy:production:win": "powershell -ExecutionPolicy Bypass -File deploy.ps1 production"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

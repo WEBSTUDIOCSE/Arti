@@ -236,15 +236,29 @@ const AartiSabhaLanding = () => {
             
             {/* Hero CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-              <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-white px-8">
+              <Button 
+                size="lg" 
+                className="bg-orange-600 hover:bg-orange-700 text-white px-8"
+                onClick={() => router.push('/create-session')}
+              >
                 <Users className="h-5 w-5 mr-2" />
                 {t.hero.hostSabha}
               </Button>
-              <Button size="lg" variant="outline" className="border-orange-600 text-orange-600 hover:bg-orange-50 px-8">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-orange-600 text-orange-600 hover:bg-orange-50 px-8"
+                onClick={() => router.push('/join')}
+              >
                 <Play className="h-5 w-5 mr-2" />
                 {t.hero.joinSabha}
               </Button>
-              <Button size="lg" variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <Button 
+                size="lg" 
+                variant="ghost" 
+                className="text-gray-600 hover:text-gray-900"
+                onClick={() => router.push('/browse')}
+              >
                 {t.hero.browseAartis}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
@@ -431,7 +445,11 @@ const AartiSabhaLanding = () => {
             <Heart className="h-5 w-5" />
             <span className="text-xs">{t.navigation.favorites}</span>
           </Button>
-          <Button variant="ghost" className="flex-col space-y-1 h-full">
+          <Button 
+            variant="ghost" 
+            className="flex-col space-y-1 h-full"
+            onClick={() => router.push('/join')}
+          >
             <Users className="h-5 w-5" />
             <span className="text-xs">{t.navigation.sabha}</span>
           </Button>
@@ -461,11 +479,18 @@ const AartiSabhaLanding = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
-              <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
+              <Button 
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => router.push('/create-session')}
+              >
                 <Users className="h-4 w-4 mr-2" />
                 {t.hero.hostSabha}
               </Button>
-              <Button variant="outline" className="w-full border-orange-600 text-orange-600 hover:bg-orange-50">
+              <Button 
+                variant="outline" 
+                className="w-full border-orange-600 text-orange-600 hover:bg-orange-50"
+                onClick={() => router.push('/join')}
+              >
                 <Play className="h-4 w-4 mr-2" />
                 {t.hero.joinSabha}
               </Button>

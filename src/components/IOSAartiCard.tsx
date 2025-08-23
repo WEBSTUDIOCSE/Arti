@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Play, Heart, Star, Eye, ChevronRight, Sparkles, Clock } from 'lucide-react';
 import { Aarti, DeityType } from '@/types/aarti';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AartiStanzaDisplay from './AartiStanzaDisplay';
 
 interface IOSAartiCardProps {
   aarti: Aarti;
@@ -223,31 +224,36 @@ const IOSAartiCard = ({
       {/* Content */}
       {showPreview && (
         <CardContent className={`pt-0 ${compact ? 'px-4 pb-4' : 'px-5 pb-5'}`}>
-          {/* Lyrics Preview - iOS Style */}
+          {/* Aarti Stanza Display - Matches /aarti page format */}
           <div className={`
-            rounded-xl p-4 mb-4
+            rounded-xl mb-4 border ${colorScheme.border}
             bg-gradient-to-br ${colorScheme.gradient}
-            border ${colorScheme.border}
           `}>
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line font-medium">
-              {showFullLyrics ? lyrics : previewLyrics}
-              {!showFullLyrics && hasMoreLyrics && (
-                <span className="text-gray-500">...</span>
-              )}
-            </div>
+            <AartiStanzaDisplay
+              lyrics={lyrics}
+              fontSize={14}
+              nightMode={false}
+              contentLanguage={isMarathi ? 'marathi' : 'hinglish'}
+              maxHeight={showFullLyrics ? '400px' : '200px'}
+              showAllStanzas={showFullLyrics}
+              className="p-2"
+              compact={true}
+            />
             
-            {hasMoreLyrics && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowFullLyrics(!showFullLyrics);
-                }}
-                className="mt-3 h-6 text-xs text-orange-600 hover:text-orange-700 p-0 font-medium"
-              >
-                {showFullLyrics ? 'Show less' : `Show all ${lyricsLines.length} lines`}
-              </Button>
+            {lyrics.split('\n\n').filter(stanza => stanza.trim()).length > 1 && (
+              <div className="px-4 pb-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowFullLyrics(!showFullLyrics);
+                  }}
+                  className="h-6 text-xs text-orange-600 hover:text-orange-700 p-0 font-medium w-full"
+                >
+                  {showFullLyrics ? 'Show less' : `Show all ${lyrics.split('\n\n').filter(stanza => stanza.trim()).length} stanzas`}
+                </Button>
+              </div>
             )}
           </div>
 

@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Play, Pause, ChevronLeft, ChevronRight, Languages, Copy, Check, SkipForward, SkipBack, Volume2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import AartiStanzaDisplay from './AartiStanzaDisplay';
 
 interface EnhancedSessionAartiData {
   id: string;
@@ -216,80 +217,26 @@ const EnhancedSessionStanzaDisplay = ({
         )}
       </Card>
 
-      {/* Stanzas Display */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Current Stanza - Large Display */}
-        <div className="lg:col-span-2">
-          <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg text-gray-800 flex items-center justify-between">
-                Current Stanza
-                <Badge className="bg-orange-500 text-white">
-                  {currentStanzaIndex + 1} / {stanzas.length}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                ref={currentStanzaRef}
-                className="bg-white/80 backdrop-blur-sm rounded-lg p-6 border border-amber-200 shadow-sm"
-              >
-                <div className="text-lg text-gray-800 font-medium leading-relaxed whitespace-pre-line">
-                  {formatStanzaText(stanzas[currentStanzaIndex] || '')}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* All Stanzas - Navigation */}
-        <div>
-          <Card className="bg-white/90 backdrop-blur-lg border-amber-200 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg text-gray-800">All Stanzas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-3">
-                  {stanzas.map((stanza, index) => (
-                    <div key={index}>
-                      <Button
-                        variant={index === currentStanzaIndex ? 'default' : 'ghost'}
-                        className={`w-full text-left justify-start h-auto p-3 ${
-                          index === currentStanzaIndex
-                            ? 'bg-orange-500 text-white'
-                            : 'hover:bg-orange-50'
-                        } ${!showControls ? 'cursor-default' : 'cursor-pointer'}`}
-                        onClick={() => showControls && goToStanza(index)}
-                        disabled={!showControls}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium">
-                              Stanza {index + 1}
-                            </span>
-                            {index === currentStanzaIndex && (
-                              <Badge variant="secondary" className="text-xs">
-                                Current
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-sm opacity-80 line-clamp-2 whitespace-pre-line text-left">
-                            {stanza.split('\n')[0]}...
-                          </div>
-                        </div>
-                      </Button>
-                      {index < stanzas.length - 1 && (
-                        <Separator className="my-2" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      {/* Complete Aarti Display - All Stanzas */}
+      <Card className="bg-white/90 backdrop-blur-lg border-amber-200 shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl text-gray-800 text-center">Complete Aarti</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <AartiStanzaDisplay
+            lyrics={lyrics}
+            fontSize={18}
+            nightMode={false}
+            contentLanguage={isMarathi ? 'marathi' : 'hinglish'}
+            maxHeight="none"
+            showAllStanzas={true}
+            autoScroll={autoScroll}
+            currentStanza={currentStanzaIndex}
+            className="w-full"
+            compact={false}
+          />
+        </CardContent>
+      </Card>
 
       {/* Progress Indicator */}
       <Card className="bg-white/90 backdrop-blur-lg border-amber-200">

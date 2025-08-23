@@ -3,7 +3,6 @@ import { Barlow, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import PWAInstaller from "@/components/PWAInstaller";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 // Initialize environment logging silently (this will execute and log to console)
@@ -62,11 +61,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${barlow.variable} font-barlow antialiased`}
       >
         <LanguageProvider>
-          <AuthProvider>
-            <PWAInstaller />
-            {children}
-            <Toaster />
-          </AuthProvider>
+          <PWAInstaller />
+          {children}
+          <Toaster />
         </LanguageProvider>
       </body>
     </html>

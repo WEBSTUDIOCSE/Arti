@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Menu, X, Play, Users, Star, Heart, Filter, ChevronRight, Globe, Settings, User, LogOut, LogIn } from 'lucide-react';
+import { Search, Menu, X, Play, Users, Star, Heart, Filter, ChevronRight, Globe, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +13,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import BreakpointIndicator from './BreakpointIndicator';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
 import AartiList from '@/components/AartiList';
 
 const AartiSabhaLanding = () => {
@@ -21,7 +20,6 @@ const AartiSabhaLanding = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
   const { t, language, setLanguage, isMarathi } = useLanguage();
-  const { user, userProfile, logout, loading } = useAuth();
 
   // Sample data with multilingual support
   const deities = [
@@ -129,27 +127,6 @@ const AartiSabhaLanding = () => {
     t.filters.festivalSpecial
   ];
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
-  // If loading, show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
       {/* Breakpoint Indicator */}
@@ -197,44 +174,6 @@ const AartiSabhaLanding = () => {
               <Button variant="ghost" size="sm" className="hover:bg-orange-50">
                 <Settings className="h-4 w-4" />
               </Button>
-              
-              {user ? (
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.photoURL || ''} />
-                    <AvatarFallback>
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleLogout}
-                    className="text-gray-600 hover:text-red-600"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => router.push('/login')}
-                    className="text-orange-600 hover:bg-orange-50"
-                  >
-                    <LogIn className="h-4 w-4 mr-1" />
-                    {t.auth.login}
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => router.push('/signup')}
-                    className="bg-orange-600 hover:bg-orange-700 text-white"
-                  >
-                    {t.auth.signup}
-                  </Button>
-                </div>
-              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -278,40 +217,6 @@ const AartiSabhaLanding = () => {
                 <Settings className="h-4 w-4 mr-2" />
                 {t.header.settings}
               </Button>
-              
-              {user ? (
-                <>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="h-4 w-4 mr-2" />
-                    {userProfile?.displayName || user.email}
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start text-red-600 hover:text-red-700"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start text-orange-600"
-                    onClick={() => router.push('/login')}
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    {t.auth.login}
-                  </Button>
-                  <Button 
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white"
-                    onClick={() => router.push('/signup')}
-                  >
-                    {t.auth.signup}
-                  </Button>
-                </>
-              )}
             </div>
           </div>
         )}
@@ -511,41 +416,6 @@ const AartiSabhaLanding = () => {
         </section>
       </main>
 
-      {/* Desktop Sidebar (Only visible on large screens) */}
-      <aside className="hidden lg:block fixed right-6 top-1/2 -translate-y-1/2 w-80">
-        <Card className="bg-white/80 backdrop-blur-lg border-amber-200">
-          <CardHeader>
-            <CardTitle className="text-lg text-gray-900">Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-              <Users className="h-4 w-4 mr-2" />
-              Host New Sabha
-            </Button>
-            <Button variant="outline" className="w-full border-orange-600 text-orange-600 hover:bg-orange-50">
-              <Search className="h-4 w-4 mr-2" />
-              Find Sabha
-            </Button>
-            
-            <div className="pt-4 border-t border-amber-200">
-              <h5 className="font-semibold text-gray-900 mb-3">Active Sabhas</h5>
-              <ScrollArea className="h-32">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
-                    <span className="text-sm text-gray-700">Ganesha Sabha</span>
-                    <Badge className="bg-green-600 text-white text-xs">Live</Badge>
-                  </div>
-                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
-                    <span className="text-sm text-gray-700">Family Circle</span>
-                    <Badge variant="outline" className="text-xs">12 members</Badge>
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
-          </CardContent>
-        </Card>
-      </aside>
-
       {/* Mobile Bottom Navigation */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-amber-200">
         <div className="grid grid-cols-4 h-16">
@@ -565,17 +435,9 @@ const AartiSabhaLanding = () => {
             <Users className="h-5 w-5" />
             <span className="text-xs">{t.navigation.sabha}</span>
           </Button>
-          <Button variant="ghost" className="flex-col space-y-1 h-full" onClick={() => {
-            if (user) {
-              // Navigate to profile if logged in
-              router.push('/profile');
-            } else {
-              // Navigate to login if not logged in
-              router.push('/login');
-            }
-          }}>
-            <User className="h-5 w-5" />
-            <span className="text-xs">{user ? t.navigation.profile : t.auth.login}</span>
+          <Button variant="ghost" className="flex-col space-y-1 h-full">
+            <Settings className="h-5 w-5" />
+            <span className="text-xs">Settings</span>
           </Button>
         </div>
       </nav>

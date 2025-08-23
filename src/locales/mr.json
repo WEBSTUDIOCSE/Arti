@@ -3,14 +3,12 @@
     "title": "Aarti Sabha",
     "tagline": "Digital Aarti Book & Sabha Companion",
     "language": "Marathi",
-    "settings": "Settings",
-    "profile": "Profile"
+    "settings": "Settings"
   },
   "navigation": {
     "browse": "Browse",
     "favorites": "Favorites",
-    "sabha": "Sabha",
-    "profile": "Profile"
+    "sabha": "Sabha"
   },
   "hero": {
     "title": "Divine Experience",
@@ -83,33 +81,6 @@
   "search": {
     "placeholder": "Search aartis, deities, or festivals...",
     "mobilePlaceholder": "Search aartis..."
-  },
-  "auth": {
-    "login": "Login",
-    "signup": "Sign Up",
-    "logout": "Logout",
-    "email": "Email",
-    "password": "Password",
-    "displayName": "Display Name",
-    "confirmPassword": "Confirm Password",
-    "signInWithGoogle": "Sign in with Google",
-    "createAccount": "Create Account",
-    "forgotPassword": "Forgot Password?",
-    "alreadyHaveAccount": "Already have an account?",
-    "dontHaveAccount": "Don't have an account?",
-    "signingIn": "Signing in...",
-    "creatingAccount": "Creating account...",
-    "welcome": "Welcome",
-    "signInError": "Sign in failed. Please try again.",
-    "signUpError": "Sign up failed. Please try again.",
-    "loginWith": "Or login with",
-    "signupWith": "Or sign up with",
-    "google": "Google",
-    "facebook": "Facebook",
-    "welcomeBack": "Welcome Back",
-    "joinCommunity": "Join the Community",
-    "loginSubtitle": "Continue your spiritual journey",
-    "signupSubtitle": "Start your devotional experience"
   },
   "dialog": {
     "startJoinSabha": "Start or Join Sabha"

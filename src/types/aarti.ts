@@ -13,12 +13,20 @@ export interface AartiLyrics {
   marathi: string;
 }
 
+export interface AartiStanza {
+  id: string;
+  hinglish: string;
+  marathi: string;
+  isChorus?: boolean; // Mark chorus/refrain stanzas
+}
+
 export interface Aarti {
   id: string;
   slug: string;
   deity: DeityType;
   title: AartiTitle;
   lyrics: AartiLyrics;
+  stanzas?: AartiStanza[]; // Optional parsed stanzas
   difficulty: DifficultyType;
   tags: string[]; // ['popular', 'daily', 'festival']
   isPopular: boolean;

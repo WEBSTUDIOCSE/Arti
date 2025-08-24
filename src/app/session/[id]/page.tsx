@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Users, Crown, Play, Pause, SkipForward, SkipBack, Square, Globe, Volume2, LogOut } from 'lucide-react';
+import { ChevronLeft, Users, Crown, Play, Pause, SkipForward, SkipBack, Square, Globe, Volume2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -227,7 +227,7 @@ Darshan Maatre Man-kamna Purti`,
                 className="hover:bg-orange-50"
                 disabled={isLeaving}
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ChevronLeft className="h-4 w-4 mr-2" />
                 {isCreator ? 'End' : 'Leave'}
               </Button>
               <div className="flex items-center gap-2">

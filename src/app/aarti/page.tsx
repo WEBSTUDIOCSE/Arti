@@ -3,11 +3,10 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { 
-  ArrowLeft, 
+  ChevronLeft, 
   Settings, 
   Share2, 
   Heart, 
-  ChevronLeft, 
   ChevronRight, 
   Maximize,
   ArrowUp,
@@ -379,7 +378,7 @@ const AartiReaderPage = () => {
         <div className="text-center">
           <p className={`text-xl mb-4 ${nightMode ? 'text-gray-300' : 'text-gray-600'}`}>{error || 'Aarti not found'}</p>
           <Button onClick={() => router.back()} variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ChevronLeft className="h-4 w-4 mr-2" />
             Go Back
           </Button>
         </div>
@@ -409,7 +408,7 @@ const AartiReaderPage = () => {
                   onClick={() => router.back()}
                   className="flex items-center gap-2"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4" />
                   <span className="hidden sm:inline">
                     Back to {deityFilter ? getDeityName(deityFilter) : 'Browse'} Aartis
                   </span>

@@ -2,10 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Sparkles, Play, Music } from 'lucide-react';
+import { ChevronLeft, Play, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -16,61 +14,40 @@ import IOSAartiSelector from '@/components/IOSAartiSelector';
 import AartiStanzaDisplay from '@/components/AartiStanzaDisplay';
 
 const CreateSessionPage = () => {
-  const [sessionName, setSessionName] = useState('');
-  const [creatorName, setCreatorName] = useState('');
   const [selectedAartis, setSelectedAartis] = useState<Aarti[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const router = useRouter();
-  const { isMarathi, t } = useLanguage();
+  const { isMarathi } = useLanguage();
 
   const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!sessionName.trim() || !creatorName.trim()) {
-      toast.error('Please fill in both fields');
-      return;
-    }
-
     if (selectedAartis.length === 0) {
-      toast.error('Please select at least one aarti for the session');
+      toast.error('Please select at least one aarti to host');
       return;
     }
 
     setIsCreating(true);
     
     try {
-      // For now, use the first selected aarti as the primary one
       const primaryAarti = selectedAartis[0];
       
       const sessionId = await sessionService.createSession(
-        sessionName.trim(), 
-        creatorName.trim(),
+        `${primaryAarti.title.hinglish} Session`, 
+        'Host',
         primaryAarti.id
       );
       
-      toast.success(`Session created with ${selectedAartis.length} aarti${selectedAartis.length > 1 ? 's' : ''}! 🎵`);
+      toast.success('Session started successfully! 🎵');
       
-      // Navigate to the session view as creator with selected aarti
-      const aartiParams = selectedAartis.map(a => `aartiId=${a.id}`).join('&');
-      router.push(`/session/${sessionId}?role=creator&name=${encodeURIComponent(creatorName.trim())}&${aartiParams}`);
+      const aartiParams = `aartiId=${primaryAarti.id}`;
+      router.push(`/session/${sessionId}?role=creator&name=Host&${aartiParams}`);
     } catch (error) {
       console.error('Failed to create session:', error);
-      toast.error('Failed to create session. Please try again.');
+      toast.error('Failed to start session. Please try again.');
     } finally {
       setIsCreating(false);
     }
-  };
-
-  const suggestedNames = [
-    'Sharma Family Evening Aarti',
-    'Diwali Special Session',
-    'Morning Prayers Together',
-    'Weekend Family Bhajan',
-    'Ganesh Chaturthi Celebration'
-  ];
-
-  const handleSuggestionClick = (suggestion: string) => {
-    setSessionName(suggestion);
   };
 
   return (
@@ -80,203 +57,118 @@ const CreateSessionPage = () => {
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button 
             variant="ghost" 
-            size="sm" 
+            size="sm"
             onClick={() => router.back()}
             className="hover:bg-orange-50"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ChevronLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-xl font-semibold text-gray-800">Start Aarti Session</h1>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-800">Host Aarti Session</h1>
+            <p className="text-sm text-gray-600">Select an aarti to share with others</p>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Session Details */}
-          <Card className="bg-white/80 backdrop-blur-lg border-amber-200 shadow-xl h-fit">
-            <CardHeader className="text-center pb-6">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center mb-4">
-                <Users className="h-8 w-8 text-white" />
-              </div>
-              <CardTitle className="text-2xl text-gray-800 mb-2">
-                🕉️ Session Details
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Create a session for your family and friends to join together in spiritual harmony
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <form onSubmit={handleCreateSession} className="space-y-6">
-                {/* Session Name Input */}
-                <div className="space-y-2">
-                  <Label htmlFor="sessionName" className="text-sm font-medium text-gray-700">
-                    Session Name
-                  </Label>
-                  <Input
-                    id="sessionName"
-                    type="text"
-                    value={sessionName}
-                    onChange={(e) => setSessionName(e.target.value)}
-                    placeholder="e.g., Sharma Family Evening Aarti"
-                    className="w-full border-orange-200 focus:border-orange-400 focus:ring-orange-400"
-                    maxLength={50}
-                    disabled={isCreating}
-                  />
-                  <p className="text-xs text-gray-500">
-                    Choose a name that helps your family recognize this session
-                  </p>
-                </div>
-
-                {/* Quick Suggestions */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    Quick Ideas
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestedNames.map((suggestion, index) => (
-                      <Button
-                        key={index}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="text-xs border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300"
-                        disabled={isCreating}
-                      >
-                        {suggestion}
-                      </Button>
-                    ))}
+      <main className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Aarti Selection */}
+          <div className="lg:col-span-2">
+            <Card className="bg-white/80 backdrop-blur-lg border-orange-200 shadow-lg">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white">
+                    <Music className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl text-gray-800">Choose Aarti</CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Select the aarti you want to host for others to join
+                    </CardDescription>
                   </div>
                 </div>
+              </CardHeader>
+              <CardContent>
+                <IOSAartiSelector
+                  selectedAartis={selectedAartis}
+                  onSelectionChange={setSelectedAartis}
+                  maxSelection={1}
+                />
+              </CardContent>
+            </Card>
+          </div>
 
-                {/* Creator Name Input */}
-                <div className="space-y-2">
-                  <Label htmlFor="creatorName" className="text-sm font-medium text-gray-700">
-                    Your Name
-                  </Label>
-                  <Input
-                    id="creatorName"
-                    type="text"
-                    value={creatorName}
-                    onChange={(e) => setCreatorName(e.target.value)}
-                    placeholder="e.g., Priya Sharma"
-                    className="w-full border-orange-200 focus:border-orange-400 focus:ring-orange-400"
-                    maxLength={30}
-                    disabled={isCreating}
-                  />
-                  <p className="text-xs text-gray-500">
-                    This is how others will see who&apos;s hosting the session
-                  </p>
-                </div>
+          {/* Selected Aarti Preview */}
+          <div className="lg:col-span-1">
+            <Card className="bg-white/80 backdrop-blur-lg border-orange-200 shadow-lg sticky top-24">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-800 flex items-center gap-2">
+                  <Play className="h-5 w-5 text-orange-600" />
+                  Ready to Host
+                </CardTitle>
+              </CardHeader>
 
-                {/* Selected Aartis Full Display */}
-                {selectedAartis.length > 0 && (
+              <CardContent>
+                {selectedAartis.length > 0 ? (
                   <div className="space-y-4">
-                    <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                      <Music className="h-4 w-4" />
-                      Selected Aartis ({selectedAartis.length})
-                    </Label>
-                    <div className="space-y-4 max-h-96 overflow-y-auto rounded-xl bg-gradient-to-b from-orange-50 to-amber-50 p-4">
-                      {selectedAartis.map((aarti) => (
-                        <div key={aarti.id} className="bg-white/80 backdrop-blur-sm border border-orange-200 rounded-xl p-4 space-y-3">
-                          {/* Aarti Header */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-semibold text-gray-800 text-base mb-1">
-                                {isMarathi ? aarti.title.marathi : aarti.title.hinglish}
-                              </h4>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700 border-orange-200">
-                                  {aarti.deity.charAt(0).toUpperCase() + aarti.deity.slice(1)}
-                                </Badge>
-                                <Badge className="bg-green-500 text-white text-xs">
-                                  Selected
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Beautiful Stanza Display - Same as /aarti page */}
-                          <div className="rounded-lg bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200">
-                            <AartiStanzaDisplay
-                              lyrics={isMarathi ? aarti.lyrics.marathi : aarti.lyrics.hinglish}
-                              fontSize={13}
-                              nightMode={false}
-                              contentLanguage={isMarathi ? 'marathi' : 'hinglish'}
-                              maxHeight="180px"
-                              showAllStanzas={false}
-                              className="px-2 py-1"
-                              compact={true}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                    {/* Selected Aarti Info */}
+                    <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
+                      <h3 className="font-semibold text-gray-800 mb-2">
+                        {isMarathi ? selectedAartis[0].title.marathi : selectedAartis[0].title.hinglish}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">
+                          {selectedAartis[0].deity.charAt(0).toUpperCase() + selectedAartis[0].deity.slice(1)}
+                        </Badge>
+                      </div>
+                      
+                      {/* Beautiful Stanza Preview */}
+                      <AartiStanzaDisplay
+                        lyrics={isMarathi ? selectedAartis[0].lyrics.marathi : selectedAartis[0].lyrics.hinglish}
+                        fontSize={12}
+                        nightMode={false}
+                        contentLanguage={isMarathi ? 'marathi' : 'hinglish'}
+                        maxHeight="200px"
+                        showAllStanzas={false}
+                        className="px-2 py-1"
+                        compact={true}
+                      />
                     </div>
+
+                    {/* Start Session Button */}
+                    <Button
+                      onClick={handleCreateSession}
+                      className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70"
+                      disabled={isCreating}
+                    >
+                      {isCreating ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Starting Session...
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <Play className="h-4 w-4" />
+                          Start Hosting
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Music className="h-8 w-8 text-orange-500" />
+                    </div>
+                    <p className="text-gray-600 text-sm">
+                      Select an aarti to begin hosting
+                    </p>
                   </div>
                 )}
-
-                {/* Create Button */}
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-70"
-                  disabled={isCreating || !sessionName.trim() || !creatorName.trim() || selectedAartis.length === 0}
-                >
-                  {isCreating ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Creating Session...
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2">
-                      <Play className="h-4 w-4" />
-                      Start Session with {selectedAartis.length} Aarti{selectedAartis.length > 1 ? 's' : ''}
-                    </div>
-                  )}
-                </Button>
-
-                {/* Info Text */}
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center">
-                      <Users className="h-4 w-4 text-amber-700" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-amber-800 mb-1">How it works</h4>
-                      <ul className="text-sm text-amber-700 space-y-1">
-                        <li>• Your family can join by selecting your session</li>
-                        <li>• Everyone will see the same aarti synchronized</li>
-                        <li>• You control the aarti flow as the host</li>
-                        <li>• Session automatically ends when you leave</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Aarti Selection */}
-          <Card className="bg-white/80 backdrop-blur-lg border-amber-200 shadow-xl">
-            <CardHeader>
-              <CardTitle className="text-xl text-gray-800">Choose Aartis</CardTitle>
-              <CardDescription>
-                Select one or more aartis to share in your session
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <IOSAartiSelector
-                selectedAartis={selectedAartis}
-                onSelectionChange={setSelectedAartis}
-                multiSelect={true}
-                maxSelection={5}
-                className=""
-              />
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
     </div>

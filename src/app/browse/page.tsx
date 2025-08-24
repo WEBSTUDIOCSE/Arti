@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Filter, Search, Star, Play } from 'lucide-react';
+import { ChevronLeft, Filter, Search, Star, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -199,7 +199,7 @@ const BrowsePage = () => {
               onClick={() => router.back()}
               className="flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4" />
               Back
             </Button>
             

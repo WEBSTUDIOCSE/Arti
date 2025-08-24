@@ -2,15 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Users, Clock, Play, UserPlus, RefreshCw, Plus, Crown, Star, Heart, Eye } from 'lucide-react';
+import { ChevronLeft, Users, Play, RefreshCw, Plus, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { sessionService, type AartiSession } from '@/services/sessionService';
 import { getAartiById } from '@/services/aartiService';
@@ -18,13 +13,10 @@ import { Aarti } from '@/types/aarti';
 import { useLanguage } from '@/contexts/LanguageContext';
 import IOSAartiCard from '@/components/IOSAartiCard';
 
-const EnhancedJoinSessionPage = () => {
+const JoinSessionPage = () => {
   const [activeSessions, setActiveSessions] = useState<AartiSession[]>([]);
-  const [participantName, setParticipantName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState<string | null>(null);
-  const [showNameDialog, setShowNameDialog] = useState(false);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [sessionAartis, setSessionAartis] = useState<{ [sessionId: string]: Aarti | null }>({});
   const router = useRouter();
   const { isMarathi } = useLanguage();
@@ -54,6 +46,27 @@ const EnhancedJoinSessionPage = () => {
     return () => unsubscribe();
   }, [sessionAartis]);
 
+  const handleJoinSession = async (sessionId: string) => {
+    setIsJoining(sessionId);
+    
+    try {
+      await sessionService.joinSession(sessionId, 'Listener');
+      toast.success('Joined session successfully! 🎵');
+      
+      router.push(`/session/${sessionId}?role=participant&name=Listener`);
+    } catch (error) {
+      console.error('Failed to join session:', error);
+      toast.error('Failed to join session. It may have ended.');
+    } finally {
+      setIsJoining(null);
+    }
+  };
+
+  const refreshSessions = () => {
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 1000);
+  };
+
   const formatTimeAgo = (timestamp: any) => {
     if (!timestamp) return 'Just now';
     
@@ -66,52 +79,6 @@ const EnhancedJoinSessionPage = () => {
     const hours = Math.floor(diffInMinutes / 60);
     if (hours < 24) return `${hours}h ago`;
     return `${Math.floor(hours / 24)}d ago`;
-  };
-
-  const handleJoinClick = (sessionId: string) => {
-    setSelectedSessionId(sessionId);
-    setShowNameDialog(true);
-  };
-
-  const handleJoinSession = async () => {
-    if (!participantName.trim() || !selectedSessionId) {
-      toast.error('Please enter your name');
-      return;
-    }
-
-    setIsJoining(selectedSessionId);
-    
-    try {
-      await sessionService.joinSession(selectedSessionId, participantName.trim());
-      toast.success(`Welcome to the session! 🎵`);
-      
-      router.push(`/session/${selectedSessionId}?role=participant&name=${encodeURIComponent(participantName.trim())}`);
-    } catch (error) {
-      console.error('Failed to join session:', error);
-      toast.error('Failed to join session. It may have ended.');
-    } finally {
-      setIsJoining(null);
-      setShowNameDialog(false);
-      setParticipantName('');
-      setSelectedSessionId(null);
-    }
-  };
-
-  const refreshSessions = () => {
-    setIsLoading(true);
-    // The subscription will automatically refresh
-    setTimeout(() => setIsLoading(false), 1000);
-  };
-
-  const getSessionPreview = (session: AartiSession) => {
-    const aarti = sessionAartis[session.id];
-    if (!aarti) return null;
-
-    const title = isMarathi ? aarti.title.marathi : aarti.title.hinglish;
-    const lyrics = isMarathi ? aarti.lyrics.marathi : aarti.lyrics.hinglish;
-    const previewLyrics = lyrics.split('\n').slice(0, 2).join('\n');
-
-    return { title, previewLyrics, aarti };
   };
 
   return (
@@ -127,7 +94,7 @@ const EnhancedJoinSessionPage = () => {
                 onClick={() => router.back()}
                 className="hover:bg-orange-50"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ChevronLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
               <div>
@@ -153,7 +120,7 @@ const EnhancedJoinSessionPage = () => {
                 className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create Session
+                Host Session
               </Button>
             </div>
           </div>
@@ -178,14 +145,14 @@ const EnhancedJoinSessionPage = () => {
                 </div>
                 <h3 className="text-lg font-medium text-gray-800 mb-2">No Active Sessions</h3>
                 <p className="text-gray-600 mb-6">
-                  There are currently no aarti sessions happening. Start your own session to invite family and friends.
+                  There are currently no aarti sessions happening. Start your own session to share with others.
                 </p>
                 <Button
                   onClick={() => router.push('/create-session')}
                   className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create New Session
+                  Host New Session
                 </Button>
               </CardContent>
             </Card>
@@ -194,85 +161,71 @@ const EnhancedJoinSessionPage = () => {
               {/* Active Sessions Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeSessions.map((session) => {
-                  const preview = getSessionPreview(session);
+                  const aarti = sessionAartis[session.id];
                   
                   return (
                     <Card
                       key={session.id}
-                      className="bg-white/80 backdrop-blur-lg border-amber-200 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group"
-                      onClick={() => handleJoinClick(session.id)}
+                      className="bg-white/80 backdrop-blur-lg border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                      onClick={() => handleJoinSession(session.id)}
                     >
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg font-semibold text-gray-800 truncate group-hover:text-orange-600 transition-colors">
-                              {session.sessionName}
+                            <CardTitle className="text-lg text-gray-800 truncate mb-1">
+                              {aarti ? (isMarathi ? aarti.title.marathi : aarti.title.hinglish) : 'Loading...'}
                             </CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-1">
-                              <div className="flex items-center gap-1">
-                                <Crown className="h-3 w-3 text-amber-600" />
-                                <span className="text-amber-700 font-medium">{session.creatorName}</span>
-                              </div>
+                            <CardDescription className="text-gray-600">
+                              {formatTimeAgo(session.createdAt)}
                             </CardDescription>
                           </div>
-                          <Badge 
-                            className={`${
-                              session.status === 'active' 
-                                ? 'bg-green-100 text-green-800 border-green-300'
-                                : 'bg-yellow-100 text-yellow-800 border-yellow-300'
-                            }`}
-                            variant="outline"
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-700 border-green-200"
                           >
-                            {session.status === 'active' ? 'Live' : 'Paused'}
+                            Live
                           </Badge>
                         </div>
                       </CardHeader>
 
                       <CardContent className="space-y-4">
-                        {/* Aarti Full Content */}
-                        {preview && (
-                          <IOSAartiCard
-                            aarti={preview.aarti}
-                            isSelected={false}
-                            onSelect={() => {}}
-                            showSelection={false}
-                            showPreview={false}
-                            className="border-0 shadow-none bg-gradient-to-r from-amber-50 to-orange-50"
-                          />
+                        {/* Aarti Preview */}
+                        {aarti && (
+                          <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-200">
+                            <IOSAartiCard
+                              aarti={aarti}
+                              isSelected={false}
+                              onSelect={() => {}}
+                              compact={true}
+                            />
+                          </div>
                         )}
 
-                        <Separator />
-
                         {/* Session Info */}
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-2 text-gray-600">
-                              <Users className="h-4 w-4" />
-                              <span>{session.participantCount} participant{session.participantCount !== 1 ? 's' : ''}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-gray-500">
-                              <Clock className="h-4 w-4" />
-                              <span>{formatTimeAgo(session.createdAt)}</span>
-                            </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Users className="h-4 w-4" />
+                            <span>Active session</span>
                           </div>
-
+                          
                           <Button
-                            className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white group-hover:shadow-md transition-all"
+                            size="sm"
                             disabled={isJoining === session.id}
+                            className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-lg"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleJoinClick(session.id);
+                              handleJoinSession(session.id);
                             }}
                           >
                             {isJoining === session.id ? (
                               <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 Joining...
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                <UserPlus className="h-4 w-4" />
-                                Join {session.sessionName}
+                                <Play className="h-3 w-3" />
+                                Join
                               </div>
                             )}
                           </Button>
@@ -286,70 +239,8 @@ const EnhancedJoinSessionPage = () => {
           )}
         </div>
       </main>
-
-      {/* Join Dialog */}
-      <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
-        <DialogContent className="bg-white/95 backdrop-blur-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl text-gray-800">Join Session</DialogTitle>
-            <DialogDescription>
-              Enter your name to join{' '}
-              <strong>{activeSessions.find(s => s.id === selectedSessionId)?.sessionName}</strong>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="participantName">Your Name</Label>
-              <Input
-                id="participantName"
-                type="text"
-                value={participantName}
-                onChange={(e) => setParticipantName(e.target.value)}
-                placeholder="e.g., Rahul Sharma"
-                className="border-orange-200 focus:border-orange-400"
-                maxLength={30}
-                onKeyPress={(e) => e.key === 'Enter' && handleJoinSession()}
-                autoFocus
-              />
-              <p className="text-xs text-gray-500">
-                This is how others will see you in the session
-              </p>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowNameDialog(false);
-                  setParticipantName('');
-                  setSelectedSessionId(null);
-                }}
-                disabled={isJoining === selectedSessionId}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleJoinSession}
-                disabled={!participantName.trim() || isJoining === selectedSessionId}
-                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
-              >
-                {isJoining === selectedSessionId ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Joining...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Join Session
-                  </div>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
-export default EnhancedJoinSessionPage;
+export default JoinSessionPage;
